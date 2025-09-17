@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutri AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            line-height: 1.6;
+        }
+
+        /* Header Navigation */
+        .header {
+            background-color: #ffffff;
+            border-bottom: 2px solid #000000;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            padding: 0.8rem 2rem;
+            text-decoration: none;
+            color: #000000;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link.active {
+            background-color: #ffeb3b;
+            color: #000000;
+            border-color: #000000;
+        }
+
+        .nav-link:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem 4rem;
+        }
+
+        /* Section Styles */
+        .section {
+            display: none;
+            margin-bottom: 2rem;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #ffeb3b;
+        }
+
+        /* Home Section */
+        .hero-section {
+            background-color: #ffeb3b;
+            padding: 10rem 5rem;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 3rem;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+        }
+
+        .about-section {
+            background-color: #f9f9f9;
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .about-section h2 {
+            margin-bottom: 1rem;
+            color: #000000;
+            font-size: 1.5rem;
+        }
+
+        .about-section p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* User Section */
+        .calculator-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #ffeb3b;
+        }
+
+        .save-button {
+            background-color: #f44336;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .save-button:hover {
+            background-color: #d32f2f;
+        }
+
+        .result-section {
+            background-color: #f9f9f9;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .result-item {
+            background-color: #ffffff;
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* Order Section */
+        .daily-meals-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .meal-time-section {
+            background-color: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .meal-time-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ffeb3b;
+            text-align: center;
+        }
+
+        .meal-time-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .daily-summary {
+            background-color: #f0f8ff;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 2rem;
+        }
+
+        .progress-container {
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .action-buttons .recommend-button {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        .cooking-method-select {
+            margin-left: 0.5rem;
+            padding: 0.3rem;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .meal-item-expanded {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .meal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .meal-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .meal-summary-item {
+            background-color: #ffffff;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+            border-left: 4px solid #ffeb3b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .meal-summary-info {
+            flex: 1;
+        }
+
+        .meal-summary-stats {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .order-panel {
+            background-color: #f9f9f9;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ffeb3b;
+        }
+
+        .meal-category {
+            margin-bottom: 1.5rem;
+        }
+
+        .meal-category h4 {
+            margin-bottom: 0.5rem;
+            color: #000000;
+        }
+
+        .meal-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #ffffff;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .meal-checkbox {
+            margin-right: 1rem;
+        }
+
+        .meal-info {
+            flex: 1;
+        }
+
+        .meal-name {
+            font-weight: bold;
+        }
+
+        .meal-details {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .quantity-input {
+            width: 80px;
+            padding: 0.3rem;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            margin-left: 1rem;
+        }
+
+        .budget-input {
+            margin-bottom: 1rem;
+        }
+
+        .budget-input input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .recommend-button {
+            background-color: #ffeb3b;
+            color: #000000;
+            padding: 0.8rem 1.5rem;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .recommend-button:hover {
+            background-color: #fff176;
+        }
+
+        .order-result {
+            background-color: #f9f9f9;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .order-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .summary-item {
+            background-color: #ffffff;
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 2rem 1rem;
+            }
+
+            .calculator-section,
+            .order-content {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .about-section {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="nav-link active" data-section="home">Home</a>
+            <a href="#" class="nav-link" data-section="user">User</a>
+            <a href="#" class="nav-link" data-section="order">Order</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <div class="hero-section">
+                <h1>🥗 Nutri AI</h1>
+                <p>AI-powered healthy food recommendation system</p>
+            </div>
+            
+            <div class="about-section">
+                <h2>About Us</h2>
+                <p>
+                    Nutri AI is an innovative nutrition application that helps you make healthy food choices tailored to your personal goals. 
+                    Whether you're looking to lose weight, gain muscle, or maintain your current health, our AI-powered system provides 
+                    personalized meal recommendations and budget-optimized menu planning.
+                </p>
+                <br>
+                <p>
+                    Our comprehensive database includes Vietnamese cuisine with various cooking methods, ensuring you get accurate 
+                    nutritional information and cost-effective meal planning. Start your healthy journey today!
+                </p>
+            </div>
+        </section>
+
+        <!-- User Section -->
+        <section id="user" class="section">
+            <h1 class="section-title">User Profile</h1>
+            
+            <div class="calculator-section">
+                <div>
+                    <h3>Calculator Section</h3>
+                    <form id="userProfileForm">
+                        <div class="input-group">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name" name="name" value="Luan Nguyen" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="age">Age:</label>
+                            <input type="number" id="age" name="age" value="25" min="16" max="100" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="gender">Gender:</label>
+                            <select id="gender" name="gender" required>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="height">Height (cm):</label>
+                            <input type="number" id="height" name="height" value="170" min="100" max="250" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="weight">Weight (kg):</label>
+                            <input type="number" id="weight" name="weight" value="70" min="30" max="200" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="activity">Activity Level:</label>
+                            <select id="activity" name="activity" required>
+                                <option value="sedentary">Sedentary</option>
+                                <option value="light">Light Activity</option>
+                                <option value="moderate">Moderate Activity</option>
+                                <option value="active">Very Active</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="goal">Goal:</label>
+                            <select id="goal" name="goal" required>
+                                <option value="lose">Lose Weight</option>
+                                <option value="maintain">Maintain Weight</option>
+                                <option value="gain">Gain Weight</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="save-button">
+                            💾 Save Profile
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="result-section">
+                    <h3>Result Section</h3>
+                    <div id="userResults">
+                        <p>Please fill in your profile information to see your daily nutritional targets.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Section -->
+        <section id="order" class="section">
+            <h1 class="section-title">Daily Meal Planning</h1>
+            
+            <!-- Daily Meal Selection -->
+            <div class="daily-meals-container">
+                <!-- Breakfast Section -->
+                <div class="meal-time-section">
+                    <h3 class="meal-time-title">🌅 Breakfast</h3>
+                    <div id="breakfastMeals" class="meal-time-content">
+                        <div class="loading">Loading meals...</div>
+                    </div>
+                </div>
+                
+                <!-- Lunch Section -->
+                <div class="meal-time-section">
+                    <h3 class="meal-time-title">☀️ Lunch</h3>
+                    <div id="lunchMeals" class="meal-time-content">
+                        <div class="loading">Loading meals...</div>
+                    </div>
+                </div>
+                
+                <!-- Dinner Section -->
+                <div class="meal-time-section">
+                    <h3 class="meal-time-title">🌙 Dinner</h3>
+                    <div id="dinnerMeals" class="meal-time-content">
+                        <div class="loading">Loading meals...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Daily Summary and Progress -->
+            <div class="daily-summary">
+                <h3 class="panel-title">📋 Daily Summary</h3>
+                <div id="dailyProgress">
+                    <p>Select meals for breakfast, lunch, and dinner to see your daily nutrition summary.</p>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="recommend-button" onclick="getDailyRecommendation()">
+                    🤖 Get AI Recommendation for Full Day
+                </button>
+                <button class="recommend-button" onclick="showBudgetOptimization()">
+                    💰 Budget Optimization
+                </button>
+            </div>
+            
+            <!-- Budget Optimization Modal -->
+            <div id="budgetModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closeBudgetModal()">&times;</span>
+                    <h3>💰 Budget Optimization</h3>
+                    <div class="budget-input">
+                        <label for="budget">Daily Budget (VND):</label>
+                        <input type="number" id="budget" value="100000" min="50000" max="500000" step="10000">
+                    </div>
+                    <button class="recommend-button" onclick="optimizeBudgetMenu()">
+                        🎯 Get Budget Recommendation
+                    </button>
+                    <div id="budgetRecommendation" style="margin-top: 1rem;">
+                        <p>Enter your budget and click the button to get optimized meal recommendations.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="order-result">
+                <h3 class="panel-title">📊 Results & Recommendations</h3>
+                <div id="orderSummary">
+                    <p>Complete your daily meal plan to see results and AI recommendations.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Global variables
+        let userProfile = null;
+        let meals = {};
+        let dailyMeals = {
+            breakfast: { meals: [], quantities: [], methods: [] },
+            lunch: { meals: [], quantities: [], methods: [] },
+            dinner: { meals: [], quantities: [], methods: [] }
+        };
+
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.section');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links and sections
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    sections.forEach(s => s.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Show corresponding section
+                    const sectionId = this.getAttribute('data-section');
+                    document.getElementById(sectionId).classList.add('active');
+                    
+                    // Load meals when order section is opened
+                    if (sectionId === 'order') {
+                        loadMeals();
+                    }
+                });
+            });
+
+            // User profile form
+            document.getElementById('userProfileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                calculateUserProfile();
+            });
+
+            // Initial setup
+            loadMeals();
+        });
+
+        // API functions
+        async function calculateUserProfile() {
+            const formData = new FormData(document.getElementById('userProfileForm'));
+            const userData = {
+                name: formData.get('name'),
+                age: parseInt(formData.get('age')),
+                gender: formData.get('gender'),
+                height: parseFloat(formData.get('height')),
+                weight: parseFloat(formData.get('weight')),
+                activity: formData.get('activity'),
+                goal: formData.get('goal')
+            };
+
+            try {
+                const response = await fetch('/api/user/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to calculate profile');
+                }
+
+                const result = await response.json();
+                userProfile = result;
+                displayUserResults(result);
+                showSuccess('Profile saved successfully!');
+            } catch (error) {
+                showError('Error calculating profile: ' + error.message);
+            }
+        }
+
+        function displayUserResults(result) {
+            const resultsDiv = document.getElementById('userResults');
+            resultsDiv.innerHTML = `
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-value">${Math.round(result.daily_calories)}</div>
+                        <div class="result-label">Daily Calories</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${Math.round(result.protein_target)}g</div>
+                        <div class="result-label">Protein Target</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${Math.round(result.carb_target)}g</div>
+                        <div class="result-label">Carb Target</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${Math.round(result.fat_target)}g</div>
+                        <div class="result-label">Fat Target</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadMeals() {
+            try {
+                const response = await fetch('/api/meals');
+                if (!response.ok) {
+                    throw new Error('Failed to load meals');
+                }
+
+                const data = await response.json();
+                meals = data.categories;
+                displayMealsForAllTimes();
+            } catch (error) {
+                showError('Error loading meals: ' + error.message);
+            }
+        }
+
+        function displayMealsForAllTimes() {
+            const mealTimes = ['breakfast', 'lunch', 'dinner'];
+            const mealTimeIds = ['breakfastMeals', 'lunchMeals', 'dinnerMeals'];
+            
+            mealTimes.forEach((mealTime, index) => {
+                displayMealsForTime(mealTime, mealTimeIds[index]);
+            });
+        }
+
+        function displayMealsForTime(mealTime, containerId) {
+            const container = document.getElementById(containerId);
+            let html = '';
+
+            Object.keys(meals).forEach(categoryKey => {
+                const category = meals[categoryKey];
+                html += `
+                    <div class="meal-category">
+                        <h4>${category.name}</h4>
+                        ${category.meals.map(meal => `
+                            <div class="meal-item-expanded">
+                                <div class="meal-header">
+                                    <input type="checkbox" class="meal-checkbox" 
+                                           data-meal-time="${mealTime}"
+                                           data-meal='${JSON.stringify(meal)}' 
+                                           onchange="toggleMealForTime(this, '${mealTime}')">
+                                    <div class="meal-info">
+                                        <div class="meal-name">${meal.name}</div>
+                                        <div class="meal-details">Base: ${meal.calories} cal, ${meal.protein}g protein, ${meal.price} VND/100g</div>
+                                    </div>
+                                </div>
+                                <div class="meal-controls" style="display: none;">
+                                    <label>Cooking Method:</label>
+                                    <select class="cooking-method-select" onchange="updateMealMethod(this, '${mealTime}')">
+                                        <option value="">Base (per 100g)</option>
+                                        ${meal.cooking_methods ? meal.cooking_methods.map(method => 
+                                            `<option value="${method.method}">${method.method} - ${method.calories} cal, ${method.price} VND</option>`
+                                        ).join('') : ''}
+                                    </select>
+                                    <label>Quantity:</label>
+                                    <input type="number" class="quantity-input" value="100" min="50" step="50" 
+                                           onchange="updateMealQuantity(this, '${mealTime}')" placeholder="grams">
+                                    <span>g</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleMealForTime(checkbox, mealTime) {
+            const meal = JSON.parse(checkbox.getAttribute('data-meal'));
+            const mealItem = checkbox.closest('.meal-item-expanded');
+            const controls = mealItem.querySelector('.meal-controls');
+            
+            if (checkbox.checked) {
+                controls.style.display = 'flex';
+                
+                // Add to daily meals
+                if (!dailyMeals[mealTime].meals.includes(meal.name)) {
+                    dailyMeals[mealTime].meals.push(meal.name);
+                    dailyMeals[mealTime].quantities.push(100); // default 100g
+                    dailyMeals[mealTime].methods.push(''); // default no cooking method
+                }
+            } else {
+                controls.style.display = 'none';
+                
+                // Remove from daily meals
+                const index = dailyMeals[mealTime].meals.indexOf(meal.name);
+                if (index > -1) {
+                    dailyMeals[mealTime].meals.splice(index, 1);
+                    dailyMeals[mealTime].quantities.splice(index, 1);
+                    dailyMeals[mealTime].methods.splice(index, 1);
+                }
+            }
+            
+            updateDailySummary();
+        }
+
+        function updateMealMethod(select, mealTime) {
+            const mealItem = select.closest('.meal-item-expanded');
+            const checkbox = mealItem.querySelector('.meal-checkbox');
+            const meal = JSON.parse(checkbox.getAttribute('data-meal'));
+            const method = select.value;
+            
+            const index = dailyMeals[mealTime].meals.indexOf(meal.name);
+            if (index > -1) {
+                dailyMeals[mealTime].methods[index] = method;
+                updateDailySummary();
+            }
+        }
+
+        function updateMealQuantity(input, mealTime) {
+            const mealItem = input.closest('.meal-item-expanded');
+            const checkbox = mealItem.querySelector('.meal-checkbox');
+            const meal = JSON.parse(checkbox.getAttribute('data-meal'));
+            const quantity = parseFloat(input.value);
+            
+            const index = dailyMeals[mealTime].meals.indexOf(meal.name);
+            if (index > -1) {
+                dailyMeals[mealTime].quantities[index] = quantity;
+                updateDailySummary();
+            }
+        }
+
+        async function updateDailySummary() {
+            const progressDiv = document.getElementById('dailyProgress');
+            
+            // Calculate totals for each meal time
+            const mealTimes = ['breakfast', 'lunch', 'dinner'];
+            const mealTimeNames = ['🌅 Breakfast', '☀️ Lunch', '🌙 Dinner'];
+            
+            let totalDailyCalories = 0;
+            let totalDailyProtein = 0;
+            let totalDailyCarbs = 0;
+            let totalDailyFat = 0;
+            let totalDailyCost = 0;
+            
+            let summaryHtml = '';
+            
+            // Process each meal time
+            for (let i = 0; i < mealTimes.length; i++) {
+                const mealTime = mealTimes[i];
+                const mealTimeName = mealTimeNames[i];
+                const mealData = dailyMeals[mealTime];
+                
+                let mealCalories = 0;
+                let mealProtein = 0;
+                let mealCarbs = 0;
+                let mealFat = 0;
+                let mealCost = 0;
+                
+                if (mealData.meals.length > 0) {
+                    summaryHtml += `<div class="meal-time-summary"><h4>${mealTimeName}</h4>`;
+                    
+                    for (let j = 0; j < mealData.meals.length; j++) {
+                        const mealName = mealData.meals[j];
+                        const quantity = mealData.quantities[j] || 100;
+                        const method = mealData.methods[j] || '';
+                        
+                        // Find the meal in our data
+                        let meal = null;
+                        Object.values(meals).forEach(category => {
+                            const foundMeal = category.meals.find(m => m.name === mealName);
+                            if (foundMeal) meal = foundMeal;
+                        });
+                        
+                        if (meal) {
+                            let calories, protein, carbs, fat, cost;
+                            
+                            if (method && meal.cooking_methods) {
+                                const cookingMethod = meal.cooking_methods.find(m => m.method === method);
+                                if (cookingMethod) {
+                                    // Use cooking method values (typically per serving)
+                                    const servings = quantity / 100; // assume 100g per serving
+                                    calories = cookingMethod.calories * servings;
+                                    protein = cookingMethod.protein * servings;
+                                    carbs = cookingMethod.carbs * servings;
+                                    fat = cookingMethod.fat * servings;
+                                    cost = cookingMethod.price * servings;
+                                } else {
+                                    // Use base values per 100g
+                                    calories = (meal.calories * quantity) / 100;
+                                    protein = (meal.protein * quantity) / 100;
+                                    carbs = (meal.carbs * quantity) / 100;
+                                    fat = (meal.fat * quantity) / 100;
+                                    cost = (meal.price * quantity) / 100;
+                                }
+                            } else {
+                                // Use base values per 100g
+                                calories = (meal.calories * quantity) / 100;
+                                protein = (meal.protein * quantity) / 100;
+                                carbs = (meal.carbs * quantity) / 100;
+                                fat = (meal.fat * quantity) / 100;
+                                cost = (meal.price * quantity) / 100;
+                            }
+                            
+                            mealCalories += calories;
+                            mealProtein += protein;
+                            mealCarbs += carbs;
+                            mealFat += fat;
+                            mealCost += cost;
+                            
+                            const displayName = method ? `${mealName} (${method})` : `${mealName} (${quantity}g)`;
+                            summaryHtml += `
+                                <div class="meal-summary-item">
+                                    <div class="meal-summary-info">
+                                        <strong>${displayName}</strong>
+                                        <div class="meal-summary-stats">${Math.round(calories)} cal, ${Math.round(protein)}g protein, ${Math.round(cost)} VND</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    summaryHtml += `
+                        <div class="meal-time-totals">
+                            <strong>Meal Total: ${Math.round(mealCalories)} cal, ${Math.round(mealProtein)}g protein, ${Math.round(mealCost)} VND</strong>
+                        </div>
+                        </div>
+                    `;
+                }
+                
+                totalDailyCalories += mealCalories;
+                totalDailyProtein += mealProtein;
+                totalDailyCarbs += mealCarbs;
+                totalDailyFat += mealFat;
+                totalDailyCost += mealCost;
+            }
+            
+            // Show daily totals
+            if (totalDailyCalories > 0) {
+                summaryHtml += `
+                    <div class="daily-totals">
+                        <h3>🎯 Daily Totals</h3>
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-value">${Math.round(totalDailyCalories)}</div>
+                                <div class="result-label">Total Calories</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value">${Math.round(totalDailyProtein)}g</div>
+                                <div class="result-label">Total Protein</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value">${Math.round(totalDailyCarbs)}g</div>
+                                <div class="result-label">Total Carbs</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value">${Math.round(totalDailyFat)}g</div>
+                                <div class="result-label">Total Fat</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value">${Math.round(totalDailyCost)}</div>
+                                <div class="result-label">Total Cost (VND)</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add progress bars if user profile exists
+                if (userProfile) {
+                    const targetCalories = userProfile.daily_calories;
+                    const targetProtein = userProfile.protein_target;
+                    const targetCarbs = userProfile.carb_target;
+                    
+                    const calorieProgress = Math.min((totalDailyCalories / targetCalories) * 100, 100);
+                    const proteinProgress = Math.min((totalDailyProtein / targetProtein) * 100, 100);
+                    const carbProgress = Math.min((totalDailyCarbs / targetCarbs) * 100, 100);
+                    
+                    summaryHtml += `
+                        <div class="progress-container">
+                            <h4>Progress Towards Daily Goals</h4>
+                            <div class="progress-item">
+                                <div class="progress-text">Calories: ${calorieProgress.toFixed(0)}% of target (${Math.round(totalDailyCalories)}/${Math.round(targetCalories)})</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${calorieProgress}%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-text">Protein: ${proteinProgress.toFixed(0)}% of target (${Math.round(totalDailyProtein)}g/${Math.round(targetProtein)}g)</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${proteinProgress}%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-text">Carbs: ${carbProgress.toFixed(0)}% of target (${Math.round(totalDailyCarbs)}g/${Math.round(targetCarbs)}g)</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${carbProgress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                summaryHtml = '<p>Select meals for breakfast, lunch, and dinner to see your daily nutrition summary.</p>';
+            }
+            
+            progressDiv.innerHTML = summaryHtml;
+        }
+
+        async function getDailyRecommendation() {
+            if (!userProfile) {
+                showError('Please complete your user profile first!');
+                return;
+            }
+            
+            // Check if any meals are selected
+            const hasSelectedMeals = Object.values(dailyMeals).some(mealTime => mealTime.meals.length > 0);
+            if (!hasSelectedMeals) {
+                showError('Please select some meals first!');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/daily/recommend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user: userProfile.user,
+                        daily_meals: dailyMeals
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get daily recommendation');
+                }
+
+                const recommendation = await response.json();
+                displayDailyRecommendation(recommendation);
+            } catch (error) {
+                showError('Error getting daily recommendation: ' + error.message);
+            }
+        }
+
+        function displayDailyRecommendation(recommendation) {
+            console.log('AI Recommendation received:', recommendation);  // Debug log
+            
+            const summaryDiv = document.getElementById('orderSummary');
+            summaryDiv.innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 10px; margin: 1rem 0;">
+                    <h4>🤖 AI Daily Meal Recommendation</h4>
+                    <div class="result-grid" style="margin-top: 1rem;">
+                        <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
+                            <div class="result-value">${Math.round(recommendation.total_calories)}</div>
+                            <div class="result-label">Optimized Calories</div>
+                        </div>
+                        <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
+                            <div class="result-value">${Math.round(recommendation.total_protein)}g</div>
+                            <div class="result-label">Protein</div>
+                        </div>
+                        <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
+                            <div class="result-value">${Math.round(recommendation.total_carbs)}g</div>
+                            <div class="result-label">Carbs</div>
+                        </div>
+                        <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
+                            <div class="result-value">${Math.round(recommendation.total_fat)}g</div>
+                            <div class="result-label">Fat</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                        <strong>💡 AI Explanation:</strong> ${recommendation.explanation}
+                    </div>
+                    ${recommendation.adjusted_meals && recommendation.adjusted_meals.length > 0 ? `
+                        <div style="margin-top: 1rem;">
+                            <h5>🔧 Recommended Portion Adjustments:</h5>
+                            ${recommendation.adjusted_meals.map((meal, index) => {
+                                const newQty = recommendation.adjusted_quantities[index];
+                                // Convert servings back to grams for cooking methods, or display as-is for gram-based
+                                const displayQty = meal.name.includes('(') ? 
+                                    `${(newQty * 100).toFixed(0)}g` :  // Cooking method: convert servings to grams
+                                    `${newQty.toFixed(0)}g`;           // Base meal: already in grams
+                                
+                                // Check if there's a significant change (more than 10% difference)
+                                const originalQty = getOriginalQuantityForMeal(meal.name);
+                                const changePercent = Math.abs((newQty - originalQty) / originalQty * 100);
+                                
+                                if (changePercent > 10) {
+                                    return `<div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255,255,255,0.1); border-radius: 3px;">
+                                        <strong>${meal.name}:</strong> Adjust to ${displayQty}
+                                        <span style="color: #ffeb3b;">(${changePercent.toFixed(0)}% ${newQty > originalQty ? 'increase' : 'decrease'})</span>
+                                    </div>`;
+                                } else {
+                                    return `<div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255,255,255,0.1); border-radius: 3px;">
+                                        <strong>${meal.name}:</strong> Keep at ${displayQty} ✓
+                                    </div>`;
+                                }
+                            }).join('')}
+                        </div>
+                    ` : '<div style="margin-top: 1rem; color: #ffeb3b;">No portion adjustments needed - your current plan looks good!</div>'}
+                </div>
+            `;
+        }
+
+        // Helper function to get original quantity for a meal
+        function getOriginalQuantityForMeal(mealName) {
+            // Extract meal name without cooking method
+            const baseName = mealName.split(' (')[0];
+            
+            // Search through daily meals to find original quantity
+            for (const mealTime of ['breakfast', 'lunch', 'dinner']) {
+                const mealIndex = dailyMeals[mealTime].meals.indexOf(baseName);
+                if (mealIndex !== -1) {
+                    const quantity = dailyMeals[mealTime].quantities[mealIndex];
+                    const method = dailyMeals[mealTime].methods[mealIndex];
+                    
+                    // If it has a cooking method, convert to servings
+                    return method ? quantity / 100 : quantity;
+                }
+            }
+            return 100; // Default fallback
+        }
+
+        function showBudgetOptimization() {
+            document.getElementById('budgetModal').style.display = 'block';
+        }
+
+        function closeBudgetModal() {
+            document.getElementById('budgetModal').style.display = 'none';
+        }
+
+        async function optimizeBudgetMenu() {
+            if (!userProfile) {
+                showError('Please complete your user profile first!');
+                return;
+            }
+
+            const budget = parseFloat(document.getElementById('budget').value);
+            
+            try {
+                const response = await fetch('/api/budget/optimize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user: userProfile.user,
+                        budget: budget
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to optimize budget menu');
+                }
+
+                const menu = await response.json();
+                displayBudgetRecommendation(menu);
+                closeBudgetModal();
+            } catch (error) {
+                showError('Error optimizing menu: ' + error.message);
+            }
+        }
+
+        function displayBudgetRecommendation(menu) {
+            const recommendationDiv = document.getElementById('budgetRecommendation');
+            recommendationDiv.innerHTML = `
+                <div style="background: white; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
+                    <h4>Optimized Daily Menu</h4>
+                    <p><strong>Total Cost:</strong> ${Math.round(menu.total_cost)} VND</p>
+                    <p><strong>Total Calories:</strong> ${Math.round(menu.total_calories)}</p>
+                    
+                    <div style="margin-top: 1rem;">
+                        <h5>🌅 Breakfast:</h5>
+                        ${menu.breakfast.map(meal => `<div>• ${meal.name}</div>`).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <h5>☀️ Lunch:</h5>
+                        ${menu.lunch.map(meal => `<div>• ${meal.name}</div>`).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <h5>🌙 Dinner:</h5>
+                        ${menu.dinner.map(meal => `<div>• ${meal.name}</div>`).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 1rem; padding: 0.5rem; background: #f0f0f0; border-radius: 3px;">
+                        <strong>AI Explanation:</strong> ${menu.explanation}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utility functions
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
