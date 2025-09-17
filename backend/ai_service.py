@@ -45,45 +45,45 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
     print(f"DEBUG: Current totals calculated: {current_calories}, {current_protein}, {current_carbs}, {current_fat}")
 
     prompt = f"""
-    You are a nutrition expert providing meal portion adjustments for optimal health.
-    
-    User profile:
-    - Age: {user.age}, Gender: {user.gender}
-    - Height: {user.height}cm, Weight: {user.weight}kg
-    - Activity: {user.activity}, Goal: {user.goal}
-    - Target daily calories: {daily_calories:.0f}
-    - Target protein: {macro_targets['protein']:.1f}g
-    - Target carbs: {macro_targets['carbs']:.1f}g
-    - Target fat: {macro_targets['fat']:.1f}g
+    Bạn là một chuyên gia dinh dưỡng AI chuyên nghiệp. Hãy phân tích kế hoạch bữa ăn hiện tại và đề xuất điều chỉnh khẩu phần để phù hợp với mục tiêu và nhu cầu dinh dưỡng của người dùng.
 
-    Current meal plan:
+    Hồ sơ người dùng:
+    - Tuổi: {user.age}, Giới tính: {user.gender}
+    - Chiều cao: {user.height}cm, Cân nặng: {user.weight}kg
+    - Mức độ vận động: {user.activity}, Mục tiêu: {user.goal}
+    - Calo mục tiêu hàng ngày: {daily_calories:.0f}
+    - Protein mục tiêu: {macro_targets['protein']:.1f}g
+    - Carb mục tiêu: {macro_targets['carbs']:.1f}g
+    - Chất béo mục tiêu: {macro_targets['fat']:.1f}g
+
+    Kế hoạch bữa ăn hiện tại:
     {', '.join(meal_descriptions)}
 
-    Current nutrition totals:
-    - Calories: {current_calories:.1f} (target: {daily_calories:.0f})
-    - Protein: {current_protein:.1f}g (target: {macro_targets['protein']:.1f}g)
-    - Carbs: {current_carbs:.1f}g (target: {macro_targets['carbs']:.1f}g)
-    - Fat: {current_fat:.1f}g (target: {macro_targets['fat']:.1f}g)
+    Tổng dinh dưỡng hiện tại:
+    - Calo: {current_calories:.1f} (mục tiêu: {daily_calories:.0f})
+    - Protein: {current_protein:.1f}g (mục tiêu: {macro_targets['protein']:.1f}g)
+    - Carb: {current_carbs:.1f}g (mục tiêu: {macro_targets['carbs']:.1f}g)
+    - Chất béo: {current_fat:.1f}g (mục tiêu: {macro_targets['fat']:.1f}g)
 
-    Analyze the current meal plan and suggest portion adjustments to better align with the user's {user.goal} goal and macro targets. 
+    Hãy phân tích kế hoạch bữa ăn hiện tại và đề xuất điều chỉnh khẩu phần để phù hợp hơn với mục tiêu {user.goal} và các chỉ số dinh dưỡng của người dùng.
     
-    IMPORTANT INSTRUCTIONS:
-    1. Always provide exactly {len(selection.quantities)} adjusted quantities (one for each meal)
-    2. For cooking method meals (portions): adjust between 0.5-3.0 portions
-    3. For gram-based meals: adjust between 50-300 grams
-    4. Make meaningful adjustments (at least 15% change) when nutrition is significantly off target
-    5. If current plan is already good (within 10% of targets), make minor adjustments (5-10%)
+    HƯỚNG DẪN QUAN TRỌNG:
+    1. Luôn cung cấp chính xác {len(selection.quantities)} lượng điều chỉnh (một cho mỗi món ăn)
+    2. Đối với món ăn có phương pháp nấu (khẩu phần): điều chỉnh từ 0.5-3.0 khẩu phần
+    3. Đối với món ăn tính theo gram: điều chỉnh từ 50-300 gram
+    4. Thực hiện điều chỉnh có ý nghĩa (ít nhất 15% thay đổi) khi dinh dưỡng lệch khá nhiều so với mục tiêu
+    5. Nếu kế hoạch hiện tại đã tốt (trong vòng 10% mục tiêu), chỉ điều chỉnh nhỏ (5-10%)
     
-    Focus on:
-    - Calorie alignment for {user.goal} goal
-    - Protein adequacy (especially important for muscle goals)
-    - Balanced macronutrient distribution
-    - Practical portion sizes
+    Tập trung vào:
+    - Cân bằng calo cho mục tiêu {user.goal}
+    - Đủ protein (đặc biệt quan trọng cho mục tiêu cơ bắp)
+    - Phân bố cân bằng các chất dinh dưỡng macro
+    - Khẩu phần thực tế
     
-    Return ONLY valid JSON with:
+    Vui lòng trả về bằng tiếng Việt và chỉ trả về JSON hợp lệ với:
     {{
-        "adjusted_quantities": [list of {len(selection.quantities)} float values],
-        "explanation": "Clear explanation of why adjustments were made based on nutrition gaps and user goal"
+        "adjusted_quantities": [danh sách {len(selection.quantities)} giá trị số thực],
+        "explanation": "Giải thích rõ ràng về lý do điều chỉnh dựa trên thiếu hụt dinh dưỡng và mục tiêu của người dùng"
     }}
     """
 
@@ -175,33 +175,33 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
     ])
 
     prompt = f"""
-    User profile:
-    - Age: {user.age}, Gender: {user.gender}, Goal: {user.goal}
-    - Target daily calories: {daily_calories}
-    - Target protein: {macro_targets['protein']:.1f}g
-    - Target carbs: {macro_targets['carbs']:.1f}g
-    - Target fat: {macro_targets['fat']:.1f}g
-    - Daily budget: {budget} VND
+    Hồ sơ người dùng:
+    - Tuổi: {user.age}, Giới tính: {user.gender}, Mục tiêu: {user.goal}
+    - Calo mục tiêu hàng ngày: {daily_calories}
+    - Protein mục tiêu: {macro_targets['protein']:.1f}g
+    - Carb mục tiêu: {macro_targets['carbs']:.1f}g
+    - Chất béo mục tiêu: {macro_targets['fat']:.1f}g
+    - Ngân sách hàng ngày: {budget} VND
 
-    Available meals:
+    Các món ăn có sẵn:
     {meals_str}
 
-    Create an optimized daily menu (breakfast, lunch, dinner) that:
-    1. Stays within budget: {budget} VND
-    2. Meets calorie target: ~{daily_calories} calories
-    3. Matches macro targets based on goal ({user.goal})
-    4. Uses appropriate cooking methods and portions
+    Tạo thực đơn tối ưu cho cả ngày (sáng, trưa, tối) sao cho:
+    1. Nằm trong ngân sách: {budget} VND
+    2. Đạt mục tiêu calo: ~{daily_calories} calo
+    3. Phù hợp với các chỉ số dinh dưỡng dựa trên mục tiêu ({user.goal})
+    4. Sử dụng phương pháp nấu và khẩu phần phù hợp
 
-    Return JSON format:
+    Vui lòng trả về bằng tiếng Việt với định dạng JSON:
     {{
         "breakfast": [
-            {{"name": "meal_name", "method": "cooking_method", "portions": 1.0, "calories": 100, "protein": 10, "carbs": 20, "fat": 5, "price": 10000}}
+            {{"name": "tên_món_ăn", "method": "phương_pháp_nấu", "portions": 1.0, "calories": 100, "protein": 10, "carbs": 20, "fat": 5, "price": 10000}}
         ],
         "lunch": [...],
         "dinner": [...],
         "total_cost": 90000,
         "total_calories": 1500,
-        "explanation": "Menu designed for weight loss with high protein..."
+        "explanation": "Thực đơn được thiết kế cho mục tiêu giảm cân với protein cao..."
     }}
     """
 

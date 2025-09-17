@@ -29,11 +29,22 @@
         }
 
         .nav-container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4rem;
+        }
+
+        .nav-links {
+            display: flex;
             gap: 2rem;
+        }
+
+        .header-logo {
+            height: 60px;
+            width: auto;
         }
 
         .nav-link {
@@ -85,16 +96,37 @@
 
         /* Home Section */
         .hero-section {
-            background-color: #ffeb3b;
-            padding: 10rem 5rem;
+            background-image: url('/static/assets/main_img.jpeg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 2rem 4rem;
             text-align: center;
             border-radius: 15px;
             margin-bottom: 3rem;
+            aspect-ratio: 16/9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            min-height: 600px;
         }
 
         .hero-section h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
+            color: #000000;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            color: #000000;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         .hero-section p {
@@ -103,9 +135,13 @@
 
         .about-section {
             background-color: #f9f9f9;
-            padding: 2rem;
+            padding: 2rem 4rem;
             border-radius: 15px;
             border: 1px solid #ddd;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
         }
 
         .about-section h2 {
@@ -501,7 +537,7 @@
         /* Responsive Design */
         @media (max-width: 768px) {
             .main-content {
-                padding: 2rem 1rem;
+                padding: 1rem 2rem;
             }
 
             .calculator-section,
@@ -511,12 +547,25 @@
 
             .nav-container {
                 flex-direction: column;
-                align-items: center;
                 gap: 1rem;
+                text-align: center;
+                padding: 0 2rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                order: 2;
+            }
+
+            .header-logo {
+                height: 50px;
+                order: 1;
             }
 
             .hero-section {
-                padding: 2rem 1rem;
+                padding: 1rem 2rem;
+                min-height: 300px;
+                aspect-ratio: 16/9;
             }
 
             .hero-section h1 {
@@ -524,7 +573,7 @@
             }
 
             .about-section {
-                padding: 1.5rem 1rem;
+                padding: 1rem 2rem;
             }
         }
     </style>
@@ -533,9 +582,12 @@
     <!-- Header Navigation -->
     <header class="header">
         <nav class="nav-container">
-            <a href="#" class="nav-link active" data-section="home">Home</a>
-            <a href="#" class="nav-link" data-section="user">User</a>
-            <a href="#" class="nav-link" data-section="order">Order</a>
+            <img src="/static/assets/logo.jpeg" alt="Nutri AI Logo" class="header-logo">
+            <div class="nav-links">
+                <a href="#" class="nav-link active" data-section="home">Trang chủ</a>
+                <a href="#" class="nav-link" data-section="user">Người dùng</a>
+                <a href="#" class="nav-link" data-section="order">Lên thực đơn</a>
+            </div>
         </nav>
     </header>
 
@@ -544,90 +596,85 @@
         <!-- Home Section -->
         <section id="home" class="section active">
             <div class="hero-section">
-                <h1>🥗 Nutri AI</h1>
-                <p>AI-powered healthy food recommendation system</p>
             </div>
             
             <div class="about-section">
                 <h2>About Us</h2>
                 <p>
-                    Nutri AI is an innovative nutrition application that helps you make healthy food choices tailored to your personal goals. 
-                    Whether you're looking to lose weight, gain muscle, or maintain your current health, our AI-powered system provides 
-                    personalized meal recommendations and budget-optimized menu planning.
-                </p>
+                    NutriAI mang đến giải pháp ăn uống lành mạnh được cá nhân hóa bằng trí tuệ nhân tạo. Chúng tôi giúp bạn dễ dàng lựa chọn thực đơn phù hợp, cân bằng dinh dưỡng và kiểm soát calo một cách khoa học.
                 <br>
                 <p>
-                    Our comprehensive database includes Vietnamese cuisine with various cooking methods, ensuring you get accurate 
-                    nutritional information and cost-effective meal planning. Start your healthy journey today!
+                    Nếu bạn đang tìm kiếm một công cụ thông minh để đồng hành trong hành trình sống healthy tại Việt Nam, NutriAI là lựa chọn đáng tin cậy. Với thực đơn gợi ý đa dạng và được thiết kế riêng cho từng mục tiêu, bạn sẽ luôn có bữa ăn ngon miệng mà vẫn khỏe mạnh mỗi ngày.
+                </p>
                 </p>
             </div>
         </section>
 
         <!-- User Section -->
         <section id="user" class="section">
-            <h1 class="section-title">User Profile</h1>
+            <h1 class="section-title">Hồ sơ người dùng</h1>
             
             <div class="calculator-section">
                 <div>
-                    <h3>Calculator Section</h3>
+                    <h3>Tính toán nhu cầu dinh dưỡng</h3>
                     <form id="userProfileForm">
                         <div class="input-group">
-                            <label for="name">Name:</label>
+                            <label for="name">Tên:</label>
                             <input type="text" id="name" name="name" value="Luan Nguyen" required>
                         </div>
                         
                         <div class="input-group">
-                            <label for="age">Age:</label>
+                            <label for="age">Tuổi:</label>
                             <input type="number" id="age" name="age" value="25" min="16" max="100" required>
                         </div>
                         
                         <div class="input-group">
-                            <label for="gender">Gender:</label>
+                            <label for="gender">Giới tính:</label>
                             <select id="gender" name="gender" required>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
+                                <option value="male">Nam</option>
+                                <option value="female">Nữ</option>
                             </select>
                         </div>
                         
                         <div class="input-group">
-                            <label for="height">Height (cm):</label>
+                            <label for="height">Chiều cao (cm):</label>
                             <input type="number" id="height" name="height" value="170" min="100" max="250" required>
                         </div>
                         
                         <div class="input-group">
-                            <label for="weight">Weight (kg):</label>
+                            <label for="weight">Cân nặng (kg):</label>
                             <input type="number" id="weight" name="weight" value="70" min="30" max="200" required>
                         </div>
                         
                         <div class="input-group">
-                            <label for="activity">Activity Level:</label>
+                            <label for="activity">Mức độ vận động:</label>
                             <select id="activity" name="activity" required>
-                                <option value="sedentary">Sedentary</option>
-                                <option value="light">Light Activity</option>
-                                <option value="moderate">Moderate Activity</option>
-                                <option value="active">Very Active</option>
+                                <option value="sedentary">Ít vận động</option>
+                                <option value="light">Vận động nhẹ</option>
+                                <option value="moderate">Vận động vừa phải</option>
+                                <option value="active">Vận động nhiều</option>
                             </select>
                         </div>
                         
                         <div class="input-group">
-                            <label for="goal">Goal:</label>
+                            <label for="goal">Mục tiêu:</label>
                             <select id="goal" name="goal" required>
-                                <option value="lose">Lose Weight</option>
-                                <option value="maintain">Maintain Weight</option>
-                                <option value="gain">Gain Weight</option>
+                                <option value="lose">Giảm cân</option>
+                                <option value="maintain">Duy trì cân nặng</option>
+                                <option value="gain">Tăng cân</option>
                             </select>
                         </div>
                         
                         <button type="submit" class="save-button">
-                            💾 Save Profile
+                            💾 Lưu hồ sơ
                         </button>
                     </form>
                 </div>
                 
                 <div class="result-section">
-                    <h3>Result Section</h3>
+                    <h3>Kết quả tính toán</h3>
                     <div id="userResults">
-                        <p>Please fill in your profile information to see your daily nutritional targets.</p>
+                        <p>Vui lòng điền thông tin hồ sơ để xem mục tiêu dinh dưỡng hàng ngày của bạn.</p>
                     </div>
                 </div>
             </div>
@@ -635,50 +682,50 @@
 
         <!-- Order Section -->
         <section id="order" class="section">
-            <h1 class="section-title">Daily Meal Planning</h1>
+            <h1 class="section-title">Lập kế hoạch bữa ăn hàng ngày</h1>
             
             <!-- Daily Meal Selection -->
             <div class="daily-meals-container">
                 <!-- Breakfast Section -->
                 <div class="meal-time-section">
-                    <h3 class="meal-time-title">🌅 Breakfast</h3>
+                    <h3 class="meal-time-title">🌅 Bữa sáng</h3>
                     <div id="breakfastMeals" class="meal-time-content">
-                        <div class="loading">Loading meals...</div>
+                        <div class="loading">Đang tải danh sách món ăn...</div>
                     </div>
                 </div>
                 
                 <!-- Lunch Section -->
                 <div class="meal-time-section">
-                    <h3 class="meal-time-title">☀️ Lunch</h3>
+                    <h3 class="meal-time-title">☀️ Bữa trưa</h3>
                     <div id="lunchMeals" class="meal-time-content">
-                        <div class="loading">Loading meals...</div>
+                        <div class="loading">Đang tải danh sách món ăn...</div>
                     </div>
                 </div>
                 
                 <!-- Dinner Section -->
                 <div class="meal-time-section">
-                    <h3 class="meal-time-title">🌙 Dinner</h3>
+                    <h3 class="meal-time-title">🌙 Bữa tối</h3>
                     <div id="dinnerMeals" class="meal-time-content">
-                        <div class="loading">Loading meals...</div>
+                        <div class="loading">Đang tải danh sách món ăn...</div>
                     </div>
                 </div>
             </div>
             
             <!-- Daily Summary and Progress -->
             <div class="daily-summary">
-                <h3 class="panel-title">📋 Daily Summary</h3>
+                <h3 class="panel-title">📋 Tổng kết hàng ngày</h3>
                 <div id="dailyProgress">
-                    <p>Select meals for breakfast, lunch, and dinner to see your daily nutrition summary.</p>
+                    <p>Chọn món ăn cho bữa sáng, trưa và tối để xem tổng hợp dinh dưỡng hàng ngày.</p>
                 </div>
             </div>
             
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <button class="recommend-button" onclick="getDailyRecommendation()">
-                    🤖 Get AI Recommendation for Full Day
+                    🤖 Nhận gợi ý AI cho cả ngày
                 </button>
                 <button class="recommend-button" onclick="showBudgetOptimization()">
-                    💰 Budget Optimization
+                    💰 Tối ưu ngân sách
                 </button>
             </div>
             
@@ -686,25 +733,25 @@
             <div id="budgetModal" class="modal" style="display: none;">
                 <div class="modal-content">
                     <span class="close" onclick="closeBudgetModal()">&times;</span>
-                    <h3>💰 Budget Optimization</h3>
+                    <h3>💰 Tối ưu ngân sách</h3>
                     <div class="budget-input">
-                        <label for="budget">Daily Budget (VND):</label>
+                        <label for="budget">Ngân sách hàng ngày (VND):</label>
                         <input type="number" id="budget" value="100000" min="50000" max="500000" step="10000">
                     </div>
                     <button class="recommend-button" onclick="optimizeBudgetMenu()">
-                        🎯 Get Budget Recommendation
+                        🎯 Nhận gợi ý theo ngân sách
                     </button>
                     <div id="budgetRecommendation" style="margin-top: 1rem;">
-                        <p>Enter your budget and click the button to get optimized meal recommendations.</p>
+                        <p>Nhập ngân sách của bạn và nhấn nút để nhận gợi ý thực đơn tối ưu.</p>
                     </div>
                 </div>
             </div>
             
             <!-- Results Section -->
             <div class="order-result">
-                <h3 class="panel-title">📊 Results & Recommendations</h3>
+                <h3 class="panel-title">📊 Kết quả & Gợi ý</h3>
                 <div id="orderSummary">
-                    <p>Complete your daily meal plan to see results and AI recommendations.</p>
+                    <p>Hoàn thành kế hoạch bữa ăn hàng ngày để xem kết quả và gợi ý của AI.</p>
                 </div>
             </div>
         </section>
@@ -787,7 +834,7 @@
                 const result = await response.json();
                 userProfile = result;
                 displayUserResults(result);
-                showSuccess('Profile saved successfully!');
+                showSuccess('Hồ sơ đã được lưu thành công!');
             } catch (error) {
                 showError('Error calculating profile: ' + error.message);
             }
@@ -799,19 +846,19 @@
                 <div class="result-grid">
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.daily_calories)}</div>
-                        <div class="result-label">Daily Calories</div>
+                        <div class="result-label">Calo hàng ngày</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.protein_target)}g</div>
-                        <div class="result-label">Protein Target</div>
+                        <div class="result-label">Mục tiêu Protein</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.carb_target)}g</div>
-                        <div class="result-label">Carb Target</div>
+                        <div class="result-label">Mục tiêu Carb</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.fat_target)}g</div>
-                        <div class="result-label">Fat Target</div>
+                        <div class="result-label">Mục tiêu Chất béo</div>
                     </div>
                 </div>
             `;
@@ -828,7 +875,7 @@
                 meals = data.categories;
                 displayMealsForAllTimes();
             } catch (error) {
-                showError('Error loading meals: ' + error.message);
+                showError('Lỗi khi tải danh sách món ăn: ' + error.message);
             }
         }
 
@@ -863,16 +910,16 @@
                                     </div>
                                 </div>
                                 <div class="meal-controls" style="display: none;">
-                                    <label>Cooking Method:</label>
+                                    <label>Phương pháp nấu:</label>
                                     <select class="cooking-method-select" onchange="updateMealMethod(this, '${mealTime}')">
                                         <option value="">Base (per 100g)</option>
                                         ${meal.cooking_methods ? meal.cooking_methods.map(method => 
                                             `<option value="${method.method}">${method.method} - ${method.calories} cal, ${method.price} VND</option>`
                                         ).join('') : ''}
                                     </select>
-                                    <label>Quantity:</label>
+                                    <label>Số lượng:</label>
                                     <input type="number" class="quantity-input" value="100" min="50" step="50" 
-                                           onchange="updateMealQuantity(this, '${mealTime}')" placeholder="grams">
+                                           onchange="updateMealQuantity(this, '${mealTime}')" placeholder="gram">
                                     <span>g</span>
                                 </div>
                             </div>
