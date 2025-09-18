@@ -36,6 +36,10 @@ class Meal(BaseModel):
     component_type: str  # carb, protein, good_fat, fiber
     food_type: str  # specific type within component (e.g., grains, poultry, etc.)
     cooking_methods: List[Dict[str, Any]]  # List of cooking methods with portions
+    # Additional attributes for budget optimization display
+    portions: Optional[float] = None
+    method: Optional[str] = None
+    quantity: Optional[float] = None
 
 class MealSelection(BaseModel):
     meals: List[Meal]

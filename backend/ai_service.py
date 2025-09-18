@@ -66,6 +66,9 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
     - Chất béo: {current_fat:.1f}g (mục tiêu: {macro_targets['fat']:.1f}g)
 
     Hãy phân tích kế hoạch bữa ăn hiện tại và đề xuất điều chỉnh khẩu phần để phù hợp hơn với mục tiêu {user.goal} và các chỉ số dinh dưỡng của người dùng.
+    Nếu mục tiêu người dùng là "lose", hãy ưu tiên giảm calo và đảm bảo đủ protein.
+    Nếu mục tiêu người dùng là "gain", hãy ưu tiên tăng calo và tăng cường protein.
+    Nếu mục tiêu người dùng là "maintain", hãy giữ calo ổn định và cân bằng các chất dinh dưỡng.
     
     HƯỚNG DẪN QUAN TRỌNG:
     1. Luôn cung cấp chính xác {len(selection.quantities)} lượng điều chỉnh (một cho mỗi món ăn)
@@ -253,7 +256,12 @@ def create_meal_from_response(meal_data: dict):
     """Create a meal object from AI response data"""
     from models import Meal
     
-    return Meal(
+    # Extract portion/quantity information
+    portions = meal_data.get("portions", 1)
+    method = meal_data.get("method", "")
+    
+    # Create meal object with enhanced data structure
+    meal = Meal(
         name=meal_data.get("name", "Unknown"),
         calories=meal_data.get("calories", 0),
         protein=meal_data.get("protein", 0),
@@ -263,15 +271,22 @@ def create_meal_from_response(meal_data: dict):
         component_type="mixed",
         food_type="prepared",
         cooking_methods=[{
-            "method": meal_data.get("method", "prepared"),
-            "portion": f"{meal_data.get('portions', 1)} portion",
+            "method": method,
+            "portion": f"{portions} portion",
             "calories": meal_data.get("calories", 0),
             "protein": meal_data.get("protein", 0),
             "carbs": meal_data.get("carbs", 0),
             "fat": meal_data.get("fat", 0),
             "price": meal_data.get("price", 0)
-        }]
+        }] if method else []
     )
+    
+    # Add additional attributes for frontend display
+    meal.portions = portions
+    meal.method = method
+    meal.quantity = portions if method else int(portions * 100)  # Convert to grams if no cooking method
+    
+    return meal
 
 def create_fallback_menu(user: User, budget: float, daily_calories: float) -> Menu:
     """Create a simple fallback menu when AI fails"""

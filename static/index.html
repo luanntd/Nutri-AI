@@ -328,12 +328,14 @@
 
         .modal-content {
             background-color: #fefefe;
-            margin: 10% auto;
+            margin: 5% auto;
             padding: 2rem;
             border-radius: 10px;
-            width: 80%;
-            max-width: 500px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
             position: relative;
+            overflow-y: auto;
         }
 
         .close {
@@ -397,6 +399,41 @@
 
         .meal-summary-info {
             flex: 1;
+        }
+
+        /* Loading indicator */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ffeb3b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .budget-recommendation-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 0.5rem;
+        }
+
+        .loading-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #666;
+            font-style: italic;
         }
 
         .meal-summary-stats {
@@ -721,7 +758,7 @@
             
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <button class="recommend-button" onclick="getDailyRecommendation()">
+                <button class="recommend-button" onclick="getDailyRecommendation()" id="dailyRecommendBtn">
                     🤖 Nhận gợi ý AI cho cả ngày
                 </button>
                 <button class="recommend-button" onclick="showBudgetOptimization()">
@@ -738,11 +775,13 @@
                         <label for="budget">Ngân sách hàng ngày (VND):</label>
                         <input type="number" id="budget" value="100000" min="50000" max="500000" step="10000">
                     </div>
-                    <button class="recommend-button" onclick="optimizeBudgetMenu()">
+                    <button class="recommend-button" onclick="optimizeBudgetMenu()" id="budgetOptimizeBtn">
                         🎯 Nhận gợi ý theo ngân sách
                     </button>
-                    <div id="budgetRecommendation" style="margin-top: 1rem;">
-                        <p>Nhập ngân sách của bạn và nhấn nút để nhận gợi ý thực đơn tối ưu.</p>
+                    <div class="budget-recommendation-container">
+                        <div id="budgetRecommendation">
+                            <p>Nhập ngân sách của bạn và nhấn nút để nhận gợi ý thực đơn tối ưu.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1164,16 +1203,24 @@
 
         async function getDailyRecommendation() {
             if (!userProfile) {
-                showError('Please complete your user profile first!');
+                showError('Vui lòng hoàn thành hồ sơ người dùng trước!');
                 return;
             }
             
             // Check if any meals are selected
             const hasSelectedMeals = Object.values(dailyMeals).some(mealTime => mealTime.meals.length > 0);
             if (!hasSelectedMeals) {
-                showError('Please select some meals first!');
+                showError('Vui lòng chọn một số món ăn trước!');
                 return;
             }
+            
+            const btn = document.getElementById('dailyRecommendBtn');
+            const summaryDiv = document.getElementById('orderSummary');
+            
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>Đang phân tích thực đơn...';
+            summaryDiv.innerHTML = '<div class="loading-text"><span class="loading-spinner"></span>AI đang phân tích thực đơn của bạn và đưa ra gợi ý cải thiện...</div>';
             
             try {
                 const response = await fetch('/api/daily/recommend', {
@@ -1194,7 +1241,12 @@
                 const recommendation = await response.json();
                 displayDailyRecommendation(recommendation);
             } catch (error) {
-                showError('Error getting daily recommendation: ' + error.message);
+                showError('Lỗi khi nhận gợi ý hàng ngày: ' + error.message);
+                summaryDiv.innerHTML = '<p style="color: red;">Có lỗi xảy ra khi nhận gợi ý. Vui lòng thử lại.</p>';
+            } finally {
+                // Reset button state
+                btn.disabled = false;
+                btn.innerHTML = '🤖 Nhận gợi ý AI cho cả ngày';
             }
         }
 
@@ -1286,11 +1338,18 @@
 
         async function optimizeBudgetMenu() {
             if (!userProfile) {
-                showError('Please complete your user profile first!');
+                showError('Vui lòng hoàn thành hồ sơ người dùng trước!');
                 return;
             }
 
             const budget = parseFloat(document.getElementById('budget').value);
+            const btn = document.getElementById('budgetOptimizeBtn');
+            const recommendationDiv = document.getElementById('budgetRecommendation');
+            
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>Đang tối ưu thực đơn...';
+            recommendationDiv.innerHTML = '<div class="loading-text"><span class="loading-spinner"></span>AI đang phân tích và tối ưu thực đơn theo ngân sách của bạn...</div>';
             
             try {
                 const response = await fetch('/api/budget/optimize', {
@@ -1310,37 +1369,65 @@
 
                 const menu = await response.json();
                 displayBudgetRecommendation(menu);
-                closeBudgetModal();
             } catch (error) {
-                showError('Error optimizing menu: ' + error.message);
+                showError('Lỗi khi tối ưu thực đơn: ' + error.message);
+                recommendationDiv.innerHTML = '<p style="color: red;">Có lỗi xảy ra khi tối ưu thực đơn. Vui lòng thử lại.</p>';
+            } finally {
+                // Reset button state
+                btn.disabled = false;
+                btn.innerHTML = '🎯 Nhận gợi ý theo ngân sách';
             }
         }
 
         function displayBudgetRecommendation(menu) {
             const recommendationDiv = document.getElementById('budgetRecommendation');
+            
+            // Helper function to format meal details
+            const formatMeal = (meal) => {
+                const portions = meal.portions || meal.quantity || 100;
+                const unit = meal.method ? 'khẩu phần' : 'gram';
+                const methodInfo = meal.method ? ` (${meal.method})` : '';
+                return `
+                    <div style="margin: 0.5rem 0; padding: 0.5rem; background: #f8f9fa; border-radius: 3px;">
+                        • <strong>${meal.name}</strong>${methodInfo}<br>
+                        <small style="color: #666;">
+                            ${portions} ${unit} - ${Math.round(meal.calories)} calo - ${meal.protein}g protein - ${Math.round(meal.price)} VND
+                        </small>
+                    </div>
+                `;
+            };
+            
             recommendationDiv.innerHTML = `
                 <div style="background: white; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
-                    <h4>Optimized Daily Menu</h4>
-                    <p><strong>Total Cost:</strong> ${Math.round(menu.total_cost)} VND</p>
-                    <p><strong>Total Calories:</strong> ${Math.round(menu.total_calories)}</p>
-                    
-                    <div style="margin-top: 1rem;">
-                        <h5>🌅 Breakfast:</h5>
-                        ${menu.breakfast.map(meal => `<div>• ${meal.name}</div>`).join('')}
+                    <h4>Thực đơn tối ưu trong ngày</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                        <div style="text-align: center; padding: 0.5rem; background: #e8f5e8; border-radius: 5px;">
+                            <strong>Tổng chi phí</strong><br>
+                            ${Math.round(menu.total_cost).toLocaleString()} VND
+                        </div>
+                        <div style="text-align: center; padding: 0.5rem; background: #fff3e0; border-radius: 5px;">
+                            <strong>Tổng calo</strong><br>
+                            ${Math.round(menu.total_calories)} calo
+                        </div>
                     </div>
                     
                     <div style="margin-top: 1rem;">
-                        <h5>☀️ Lunch:</h5>
-                        ${menu.lunch.map(meal => `<div>• ${meal.name}</div>`).join('')}
+                        <h5>🌅 Bữa sáng:</h5>
+                        ${menu.breakfast.map(formatMeal).join('')}
                     </div>
                     
                     <div style="margin-top: 1rem;">
-                        <h5>🌙 Dinner:</h5>
-                        ${menu.dinner.map(meal => `<div>• ${meal.name}</div>`).join('')}
+                        <h5>☀️ Bữa trưa:</h5>
+                        ${menu.lunch.map(formatMeal).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <h5>🌙 Bữa tối:</h5>
+                        ${menu.dinner.map(formatMeal).join('')}
                     </div>
                     
                     <div style="margin-top: 1rem; padding: 0.5rem; background: #f0f0f0; border-radius: 3px;">
-                        <strong>AI Explanation:</strong> ${menu.explanation}
+                        <strong>Giải thích AI:</strong> ${menu.explanation}
                     </div>
                 </div>
             `;
