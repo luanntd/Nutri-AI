@@ -182,7 +182,7 @@ async def recommend_meals(request: MealRecommendationRequest):
                     method = next((m for m in meal.cooking_methods if m["method"] == meal_data["cooking_method"]), None)
                     if method:
                         processed_meal = Meal(
-                            name=f"{meal.name} ({method['method']})",
+                            name=f"{meal.name} ({translate_cooking_method(method['method'])})",
                             calories=method["calories"],
                             protein=method["protein"],
                             carbs=method["carbs"],

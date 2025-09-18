@@ -23,12 +23,7 @@ def get_daily_calories(user: User) -> float:
     bmr = calculate_bmr(user)
     tdee = calculate_tdee(user, bmr)
     
-    if user.goal == "lose":
-        return tdee - 500  # Deficit for weight loss
-    elif user.goal == "gain":
-        return tdee + 500  # Surplus for weight gain
-    else:
-        return tdee  # Maintenance
+    return tdee
 
 def calculate_daily_calories(user: User) -> float:
     """Calculate daily calorie needs based on user profile and goal"""

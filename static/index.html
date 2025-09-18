@@ -855,25 +855,25 @@
                         
                         <div class="input-group">
                             <label for="age">Tuổi:</label>
-                            <input type="number" id="age" name="age" value="25" min="16" max="100" required>
+                            <input type="number" id="age" name="age" value="21" min="16" max="100" required>
                         </div>
                         
                         <div class="input-group">
                             <label for="gender">Giới tính:</label>
                             <select id="gender" name="gender" required>
-                                <option value="male">Nam</option>
                                 <option value="female">Nữ</option>
+                                <option value="male">Nam</option>
                             </select>
                         </div>
                         
                         <div class="input-group">
                             <label for="height">Chiều cao (cm):</label>
-                            <input type="number" id="height" name="height" value="170" min="100" max="250" required>
+                            <input type="number" id="height" name="height" value="160" min="100" max="250" required>
                         </div>
                         
                         <div class="input-group">
                             <label for="weight">Cân nặng (kg):</label>
-                            <input type="number" id="weight" name="weight" value="70" min="30" max="200" required>
+                            <input type="number" id="weight" name="weight" value="45" min="30" max="200" required>
                         </div>
                         
                         <div class="input-group">
@@ -1384,7 +1384,7 @@
                             mealFiber += fiber;
                             mealCost += cost;
                             
-                            const displayName = method ? `${mealName} (${method})` : `${mealName} (${quantity}g)`;
+                            const displayName = `${mealName} (${translateCookingMethod(method)})`;
                             summaryHtml += `
                                 <div class="meal-summary-item">
                                     <div class="meal-summary-info">
@@ -1398,7 +1398,7 @@
                     
                     summaryHtml += `
                         <div class="meal-time-totals">
-                            <strong>Tổng bữa ăn: ${Math.round(mealCalories)} cal, ${Math.round(mealProtein)}g đạm, ${Math.round(mealCost)} VND</strong>
+                            <strong>Tổng bữa ăn: ${Math.round(mealCalories)} cal, ${Math.round(mealProtein)}g đạm, ${Math.round(mealCarbs)}g tinh bột, ${Math.round(mealFat)}g chất béo tốt, ${Math.round(mealFiber)}g chất xơ, ${Math.round(mealCost)} VND</strong>
                         </div>
                         </div>
                     `;
@@ -1691,7 +1691,7 @@
             const formatMeal = (meal) => {
                 const portions = meal.portions || meal.quantity || 100;
                 const unit = 'gram';
-                const methodInfo = meal.method ? ` (${meal.method})` : '';
+                const methodInfo = ` (${translateCookingMethod(meal.method)})`;
                 return `
                     <div style="margin: 0.5rem 0; padding: 0.5rem; background: #f8f9fa; border-radius: 3px;">
                         • <strong>${meal.name}</strong>${methodInfo}<br>
@@ -1889,7 +1889,7 @@
 
         function placeOrder() {
             console.log('Đặt hàng được nhấn - chức năng sẽ được triển khai sau');
-            alert('Đặt hàng đã được đặt thành công!');
+            alert('Đơn hàng đã được đặt thành công!');
         }
 
         // Load cart count on page load
