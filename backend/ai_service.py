@@ -14,11 +14,13 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
     daily_calories = calculate_daily_calories(user)
     macro_targets = get_macro_targets(user, daily_calories)
 
-    # Calculate current totals - handle both cooking method and legacy data
+    # Calculate current totals - always use gram-based approach
     current_calories = 0
     current_protein = 0
     current_carbs = 0
     current_fat = 0
+    current_fiber = 0
+    current_cost = 0
 
     meal_descriptions = []
 
@@ -26,23 +28,36 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
         print(f"DEBUG: Meal {i}: {meal.name}, qty: {qty}, type: {type(qty)}")
         print(f"DEBUG: Meal calories: {meal.calories}, type: {type(meal.calories)}")
 
+        # Always use gram-based calculation (qty is in grams)
+        # Use first cooking method nutrition values if available, otherwise use base values
         if hasattr(meal, 'cooking_methods') and meal.cooking_methods:
-            # New cooking method data - use first cooking method as default
+            # Use first cooking method nutrition per 100g
             method_data = meal.cooking_methods[0]
-            current_calories += method_data["calories"] * qty
-            current_protein += method_data["protein"] * qty
-            current_carbs += method_data["carbs"] * qty
-            current_fat += method_data["fat"] * qty
-            meal_descriptions.append(f"{meal.name} ({method_data['method']}, {qty} portions)")
+            calories_per_100g = method_data["calories"]
+            protein_per_100g = method_data["protein"]
+            carbs_per_100g = method_data["carbs"]
+            fat_per_100g = method_data["fat"]
+            fiber_per_100g = method_data.get("fiber", 0)
+            method_name = method_data['method']
         else:
-            # Legacy gram-based data
-            current_calories += (float(meal.calories) * float(qty)) / 100
-            current_protein += (float(meal.protein) * float(qty)) / 100
-            current_carbs += (float(meal.carbs) * float(qty)) / 100
-            current_fat += (float(meal.fat) * float(qty)) / 100
-            meal_descriptions.append(f"{meal.name} ({qty}g)")
+            # Use base meal nutrition per 100g
+            calories_per_100g = float(meal.calories)
+            protein_per_100g = float(meal.protein)
+            carbs_per_100g = float(meal.carbs)
+            fat_per_100g = float(meal.fat)
+            fiber_per_100g = float(getattr(meal, 'fiber', 0))
+            method_name = "cơ bản"
+        
+        # Calculate nutrition and cost based on grams
+        current_calories += (calories_per_100g * float(qty) / 100)
+        current_protein += (protein_per_100g * float(qty) / 100)
+        current_carbs += (carbs_per_100g * float(qty) / 100)
+        current_fat += (fat_per_100g * float(qty) / 100)
+        current_fiber += (fiber_per_100g * float(qty) / 100)
+        current_cost += (float(meal.price) * float(qty) / 100)  # Price per 100g
+        meal_descriptions.append(f"{meal.name} ({method_name}, {qty}g)")
 
-    print(f"DEBUG: Current totals calculated: {current_calories}, {current_protein}, {current_carbs}, {current_fat}")
+    print(f"DEBUG: Current totals calculated: {current_calories}, {current_protein}, {current_carbs}, {current_fat}, {current_fiber}")
 
     prompt = f"""
     Bạn là một chuyên gia dinh dưỡng AI chuyên nghiệp. Hãy phân tích kế hoạch bữa ăn hiện tại và đề xuất điều chỉnh khẩu phần để phù hợp với mục tiêu và nhu cầu dinh dưỡng của người dùng.
@@ -55,6 +70,7 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
     - Protein mục tiêu: {macro_targets['protein']:.1f}g
     - Carb mục tiêu: {macro_targets['carbs']:.1f}g
     - Chất béo mục tiêu: {macro_targets['fat']:.1f}g
+    - Chất xơ mục tiêu: {macro_targets['fiber']:.1f}g
 
     Kế hoạch bữa ăn hiện tại:
     {', '.join(meal_descriptions)}
@@ -64,28 +80,33 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
     - Protein: {current_protein:.1f}g (mục tiêu: {macro_targets['protein']:.1f}g)
     - Carb: {current_carbs:.1f}g (mục tiêu: {macro_targets['carbs']:.1f}g)
     - Chất béo: {current_fat:.1f}g (mục tiêu: {macro_targets['fat']:.1f}g)
+    - Chất xơ: {current_fiber:.1f}g (mục tiêu: {macro_targets['fiber']:.1f}g)
 
-    Hãy phân tích kế hoạch bữa ăn hiện tại và đề xuất điều chỉnh khẩu phần để phù hợp hơn với mục tiêu {user.goal} và các chỉ số dinh dưỡng của người dùng.
-    Nếu mục tiêu người dùng là "lose", hãy ưu tiên giảm calo và đảm bảo đủ protein.
-    Nếu mục tiêu người dùng là "gain", hãy ưu tiên tăng calo và tăng cường protein.
-    Nếu mục tiêu người dùng là "maintain", hãy giữ calo ổn định và cân bằng các chất dinh dưỡng.
+    Lưu ý:
+    - Có 4 calo trên mỗi gram protein và carb, 9 calo trên mỗi gram fat, 2 calo trên mỗi gram fiber.
+
+    Hãy phân tích kế hoạch bữa ăn hiện tại và đề xuất điều chỉnh khẩu phần để phù hợp hơn với mục tiêu {user.goal} và các chỉ số dinh dưỡng của người dùng:
+    - Nếu mục tiêu người dùng là "lose", hãy ưu tiên giảm tổng calo thấp hơn calo hằng ngày và đảm bảo đủ protein.
+    - Nếu mục tiêu người dùng là "gain", hãy ưu tiên tăng tổng calo cao hơn calo hằng ngày và tăng cường protein.
+    - Nếu mục tiêu người dùng là "maintain", hãy giữ calo ổn định và cân bằng các chất dinh dưỡng.
     
     HƯỚNG DẪN QUAN TRỌNG:
     1. Luôn cung cấp chính xác {len(selection.quantities)} lượng điều chỉnh (một cho mỗi món ăn)
-    2. Đối với món ăn có phương pháp nấu (khẩu phần): điều chỉnh từ 0.5-3.0 khẩu phần
-    3. Đối với món ăn tính theo gram: điều chỉnh từ 50-300 gram
-    4. Thực hiện điều chỉnh có ý nghĩa (ít nhất 15% thay đổi) khi dinh dưỡng lệch khá nhiều so với mục tiêu
-    5. Nếu kế hoạch hiện tại đã tốt (trong vòng 10% mục tiêu), chỉ điều chỉnh nhỏ (5-10%)
+    2. TẤT CẢ món ăn đều tính theo GRAM, điều chỉnh từ 25-400 gram
+    3. MỖI lượng gram phải chia hết cho 25 (ví dụ: 25g, 50g, 75g, 100g, 125g, 150g...)
+    4. Thực hiện điều chỉnh có ý nghĩa (ít nhất 25g thay đổi) khi dinh dưỡng lệch khá nhiều so với mục tiêu
+    5. Nếu kế hoạch hiện tại đã tốt (trong vòng 10% mục tiêu), chỉ điều chỉnh ±25g hoặc ±50g
+    6. Giá trị dinh dưỡng của mỗi món ăn được tính theo cal/100g
     
     Tập trung vào:
     - Cân bằng calo cho mục tiêu {user.goal}
     - Đủ protein (đặc biệt quan trọng cho mục tiêu cơ bắp)
     - Phân bố cân bằng các chất dinh dưỡng macro
-    - Khẩu phần thực tế
+    - Khẩu phần thực tế (25g là bước nhỏ nhất)
     
     Vui lòng trả về bằng tiếng Việt và chỉ trả về JSON hợp lệ với:
     {{
-        "adjusted_quantities": [danh sách {len(selection.quantities)} giá trị số thực],
+        "adjusted_grams": [danh sách {len(selection.quantities)} giá trị gram (phải chia hết cho 25)],
         "explanation": "Giải thích rõ ràng về lý do điều chỉnh dựa trên thiếu hụt dinh dưỡng và mục tiêu của người dùng"
     }}
     """
@@ -110,23 +131,38 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
         try:
             result = json.loads(response.text)
             print(f"DEBUG: Parsed result: {result}")
-            # Ensure adjusted_quantities are floats
-            raw_quantities = result.get("adjusted_quantities", selection.quantities)
-            adjusted_quantities = [float(qty) for qty in raw_quantities]
+            # Get gram values and ensure they are multiples of 25
+            raw_grams = result.get("adjusted_grams", result.get("adjusted_quantities", selection.quantities))
+            adjusted_quantities = []
+            for gram_qty in raw_grams:
+                # Round to nearest 25g increment
+                rounded_grams = round(float(gram_qty) / 25) * 25
+                # Ensure minimum 25g
+                rounded_grams = max(25, rounded_grams)
+                adjusted_quantities.append(float(rounded_grams))
             explanation = result.get("explanation", "AI recommendation generated")
         except Exception as e:
             print(f"Error parsing AI response: {e}")
-            # Fallback if JSON parsing fails
-            result = {"adjusted_quantities": selection.quantities, "explanation": "Unable to parse AI response"}
-            adjusted_quantities = [float(qty) for qty in selection.quantities]
-            explanation = "Unable to parse AI response"
+            # Fallback if JSON parsing fails - round current quantities to 25g increments
+            adjusted_quantities = []
+            for qty in selection.quantities:
+                rounded_grams = round(float(qty) / 25) * 25
+                rounded_grams = max(25, rounded_grams)
+                adjusted_quantities.append(float(rounded_grams))
+            explanation = "Unable to parse AI response - using rounded current quantities"
 
     except Exception as e:
         print(f"Error calling AI service: {e}")
-        # Fallback: simple scaling based on calorie target
+        # Fallback: simple scaling based on calorie target with 25g rounding
         scale_factor = daily_calories / max(current_calories, 1)
-        adjusted_quantities = [float(qty * scale_factor) for qty in selection.quantities]
-        explanation = f"Simple scaling: {scale_factor:.2f}x to reach {daily_calories} calories"
+        adjusted_quantities = []
+        for qty in selection.quantities:
+            scaled_qty = qty * scale_factor
+            # Round to nearest 25g increment
+            rounded_grams = round(scaled_qty / 25) * 25
+            rounded_grams = max(25, rounded_grams)
+            adjusted_quantities.append(float(rounded_grams))
+        explanation = f"Simple scaling: {scale_factor:.2f}x to reach {daily_calories} calories (rounded to 25g increments)"
 
     # Recalculate with adjusted quantities
     print(f"DEBUG: About to recalculate with adjusted_quantities: {adjusted_quantities}")
@@ -136,23 +172,37 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
     total_protein = 0
     total_carbs = 0
     total_fat = 0
+    total_fiber = 0
+    total_cost = 0
 
     for meal, qty in zip(selection.meals, adjusted_quantities):
+        # Always use gram-based calculation (qty is in grams)
+        # Use first cooking method nutrition values if available, otherwise use base values
         if hasattr(meal, 'cooking_methods') and meal.cooking_methods:
-            # New cooking method data
+            # Use first cooking method nutrition per 100g
             method_data = meal.cooking_methods[0]
-            total_calories += method_data["calories"] * qty
-            total_protein += method_data["protein"] * qty
-            total_carbs += method_data["carbs"] * qty
-            total_fat += method_data["fat"] * qty
+            calories_per_100g = method_data["calories"]
+            protein_per_100g = method_data["protein"]
+            carbs_per_100g = method_data["carbs"]
+            fat_per_100g = method_data["fat"]
+            fiber_per_100g = method_data.get("fiber", 0)
         else:
-            # Legacy gram-based data
-            total_calories += (float(meal.calories) * float(qty)) / 100
-            total_protein += (float(meal.protein) * float(qty)) / 100
-            total_carbs += (float(meal.carbs) * float(qty)) / 100
-            total_fat += (float(meal.fat) * float(qty)) / 100
+            # Use base meal nutrition per 100g
+            calories_per_100g = float(meal.calories)
+            protein_per_100g = float(meal.protein)
+            carbs_per_100g = float(meal.carbs)
+            fat_per_100g = float(meal.fat)
+            fiber_per_100g = float(getattr(meal, 'fiber', 0))
+        
+        # Calculate nutrition and cost based on grams
+        total_calories += (calories_per_100g * float(qty) / 100)
+        total_protein += (protein_per_100g * float(qty) / 100)
+        total_carbs += (carbs_per_100g * float(qty) / 100)
+        total_fat += (fat_per_100g * float(qty) / 100)
+        total_fiber += (fiber_per_100g * float(qty) / 100)
+        total_cost += (float(meal.price) * float(qty) / 100)  # Price per 100g
 
-    print(f"DEBUG: Final totals: {total_calories}, {total_protein}, {total_carbs}, {total_fat}")
+    print(f"DEBUG: Final totals: {total_calories}, {total_protein}, {total_carbs}, {total_fat}, {total_fiber}, {total_cost}")
 
     return Recommendation(
         adjusted_meals=selection.meals,
@@ -161,6 +211,8 @@ def get_meal_recommendation(user: User, selection: MealSelection) -> Recommendat
         total_protein=total_protein,
         total_carbs=total_carbs,
         total_fat=total_fat,
+        total_fiber=total_fiber,
+        total_cost=total_cost,
         explanation=explanation
     )
 
@@ -171,7 +223,7 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
     macro_targets = get_macro_targets(user, daily_calories)
 
     meals_str = "\n".join([
-        f"- {meal.name}: {meal.calories} cal, {meal.protein}g protein, {meal.price} VND" +
+        f"- {meal.name}: {meal.calories} cal, {meal.protein}g protein, {meal.carbs}g carbs, {meal.fat}g fat, {meal.fiber}g fiber, {meal.price} VND" +
         (f" (cooking methods: {', '.join([method['method'] for method in meal.cooking_methods])})" 
          if hasattr(meal, 'cooking_methods') and meal.cooking_methods else "/100g")
         for meal in SAMPLE_MEALS
@@ -193,12 +245,12 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
     1. Nằm trong ngân sách: {budget} VND
     2. Đạt mục tiêu calo: ~{daily_calories} calo
     3. Phù hợp với các chỉ số dinh dưỡng dựa trên mục tiêu ({user.goal})
-    4. Sử dụng phương pháp nấu và khẩu phần phù hợp
+    4. Sử dụng phương pháp nấu và khối lượng tính bằng gram (PHẢI chia hết cho 25g, tối thiểu 25g)
 
     Vui lòng trả về bằng tiếng Việt với định dạng JSON:
     {{
         "breakfast": [
-            {{"name": "tên_món_ăn", "method": "phương_pháp_nấu", "portions": 1.0, "calories": 100, "protein": 10, "carbs": 20, "fat": 5, "price": 10000}}
+            {{"name": "tên_món_ăn", "method": "phương_pháp_nấu", "grams": 100, "calories": 100, "protein": 10, "carbs": 20, "fat": 5, "fiber": 3, "price": 10000}}
         ],
         "lunch": [...],
         "dinner": [...],
@@ -255,35 +307,40 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
 def create_meal_from_response(meal_data: dict):
     """Create a meal object from AI response data"""
     
-    # Extract portion/quantity information
-    portions = meal_data.get("portions", 1)
+    # Extract gram/quantity information and round to 25g increments
+    grams = meal_data.get("grams", meal_data.get("portions", 100))  # Fallback for old format
+    # Round to 25g increments
+    rounded_grams = round(float(grams) / 25) * 25
+    rounded_grams = max(25, rounded_grams)  # Minimum 25g
+    
     method = meal_data.get("method", "")
     
-    # Create meal object with enhanced data structure
+    # Create meal object with enhanced data structure (all values per 100g)
     meal = Meal(
         name=meal_data.get("name", "Unknown"),
         calories=meal_data.get("calories", 0),
         protein=meal_data.get("protein", 0),
         carbs=meal_data.get("carbs", 0),
         fat=meal_data.get("fat", 0),
+        fiber=meal_data.get("fiber", 0),
         price=meal_data.get("price", 0),
         component_type="mixed",
         food_type="prepared",
         cooking_methods=[{
             "method": method,
-            "portion": f"{portions} portion",
             "calories": meal_data.get("calories", 0),
             "protein": meal_data.get("protein", 0),
             "carbs": meal_data.get("carbs", 0),
             "fat": meal_data.get("fat", 0),
-            "price": meal_data.get("price", 0)
+            "fiber": meal_data.get("fiber", 0),
+            "price": meal_data.get("price", 0),
+            "grams": rounded_grams
         }] if method else []
     )
     
     # Add additional attributes for frontend display
-    meal.portions = portions
     meal.method = method
-    meal.quantity = portions if method else int(portions * 100)  # Convert to grams if no cooking method
+    meal.quantity = rounded_grams  # Use rounded grams for all calculations
     
     return meal
 

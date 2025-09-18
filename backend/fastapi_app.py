@@ -6,9 +6,28 @@ from pydantic import BaseModel
 from typing import List, Optional
 import os
 
-from backend.models import Meal, User, MealSelection, Recommendation, Menu, SAMPLE_MEALS, Gender, ActivityLevel, Goal
+from backend.models import (Meal, User, MealSelection, MealRecommendationRequest, 
+                          Recommendation, Menu, SAMPLE_MEALS, Gender, ActivityLevel, Goal)
 from backend.calculations import calculate_daily_calories, get_macro_targets
 from backend.ai_service import get_meal_recommendation, get_optimized_menu
+
+# Cooking method translation function
+def translate_cooking_method(method):
+    """Translate English cooking methods to Vietnamese"""
+    translations = {
+        'boiled': 'Luộc',
+        'steamed': 'Hấp', 
+        'raw': 'Sống/Tươi',
+        'baked': 'Nướng lò',
+        'grilled': 'Nướng',
+        'fried': 'Chiên',
+        'scrambled': 'Bác trứng',
+        'plain': 'Nguyên chất',
+        'spread': 'Phết',
+        'drizzled': 'Rưới',
+        'sautéed': 'Xào'
+    }
+    return translations.get(method, method)
 
 app = FastAPI(title="Nutri AI API", description="AI-powered nutrition recommendation system")
 
@@ -26,7 +45,7 @@ static_path = os.path.join(os.path.dirname(__file__), "..", "static")
 if os.path.exists(static_path):
     app.mount("/static", StaticFiles(directory=static_path), name="static")
 
-# Pydantic models for API requests/responses
+# Pydantic models for API requests/responses (only needed ones)
 class UserProfileRequest(BaseModel):
     name: str
     age: int
@@ -41,23 +60,35 @@ class UserProfileResponse(BaseModel):
     protein_target: float
     carb_target: float
     fat_target: float
+    fiber_target: float
     user: UserProfileRequest
-
-class MealRecommendationRequest(BaseModel):
-    user: UserProfileRequest
-    selected_meals: List[dict]
 
 class BudgetMenuRequest(BaseModel):
     user: UserProfileRequest
     budget: float
 
-class OrderSummary(BaseModel):
-    meals: List[dict]
+class CartItem(BaseModel):
+    name: str
+    quantity: float  # in grams
+    cooking_method: Optional[str] = None
+    calories: float
+    protein: float
+    carbs: float
+    fat: float
+    fiber: float
+    price: float
+
+class CartSummary(BaseModel):
+    items: List[CartItem]
     total_calories: float
     total_protein: float
     total_carbs: float
     total_fat: float
+    total_fiber: float
     total_cost: float
+
+# Global shopping cart storage (in production, use a database)
+shopping_cart = []
 
 # API Routes
 
@@ -78,10 +109,10 @@ async def health_check():
 async def get_meals():
     """Get all available meals grouped by category with cooking methods"""
     categories = {
-        "carb": {"name": "🍚 Carbs", "meals": []},
-        "protein": {"name": "🥩 Protein", "meals": []},
-        "good_fat": {"name": "🥜 Good Fats", "meals": []},
-        "fiber": {"name": "🥦 Fiber", "meals": []}
+        "carb": {"name": "🍚 Tinh bột", "meals": []},
+        "protein": {"name": "🥩 Chất đạm", "meals": []},
+        "good_fat": {"name": "🥜 Chất béo tốt", "meals": []},
+        "fiber": {"name": "🥦 Chất xơ", "meals": []}
     }
 
     for meal in SAMPLE_MEALS:
@@ -116,6 +147,7 @@ async def calculate_user_profile(user_data: UserProfileRequest):
             protein_target=macro_targets["protein"],
             carb_target=macro_targets["carbs"],
             fat_target=macro_targets["fat"],
+            fiber_target=macro_targets["fiber"],
             user=user_data
         )
     
@@ -155,6 +187,7 @@ async def recommend_meals(request: MealRecommendationRequest):
                             protein=method["protein"],
                             carbs=method["carbs"],
                             fat=method["fat"],
+                            fiber=method.get("fiber", 0),
                             price=method["price"],
                             component_type=meal.component_type,
                             food_type=meal.food_type,
@@ -210,24 +243,25 @@ async def recommend_daily_meals(request: dict):
                         method = methods_data[i] if i < len(methods_data) and methods_data[i] else None
                         
                         if method:
-                            # Create meal with specific cooking method
+                            # Create meal with specific cooking method (all values per 100g)
                             method_data = next((m for m in meal.cooking_methods if m["method"] == method), None)
                             if method_data:
-                                # Convert grams to servings for cooking methods (assume 100g per serving)
-                                servings = quantity / 100.0
+                                # Use Vietnamese name for cooking method
+                                vietnamese_method = translate_cooking_method(method_data['method'])
                                 processed_meal = Meal(
-                                    name=f"{meal.name} ({method_data['method']})",
+                                    name=f"{meal.name} ({vietnamese_method})",
                                     calories=method_data["calories"],
                                     protein=method_data["protein"],
                                     carbs=method_data["carbs"],
                                     fat=method_data["fat"],
+                                    fiber=method_data.get("fiber", 0),  # Add fiber field with default
                                     price=method_data["price"],
                                     component_type=meal.component_type,
                                     food_type=meal.food_type,
                                     cooking_methods=[method_data]
                                 )
                                 all_meals.append(processed_meal)
-                                all_quantities.append(servings)  # Use servings for cooking methods
+                                all_quantities.append(quantity)  # Use grams for all meals
                             else:
                                 # Fallback to base meal if cooking method not found
                                 all_meals.append(meal)
@@ -270,77 +304,53 @@ async def optimize_budget_menu(request: BudgetMenuRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/order/calculate")
-async def calculate_order(meals: List[dict]):
-    """Calculate total nutrition and cost for selected meals"""
-    try:
-        total_calories = 0
-        total_protein = 0
-        total_carbs = 0
-        total_fat = 0
-        total_cost = 0
-        processed_meals = []
-        
-        for meal_data in meals:
-            # Find the meal in SAMPLE_MEALS
-            meal = next((m for m in SAMPLE_MEALS if m.name == meal_data["name"]), None)
-            if meal:
-                quantity = meal_data.get("quantity", 1)
-                
-                if meal_data.get("cooking_method"):
-                    # Use specific cooking method
-                    method = next((m for m in meal.cooking_methods if m["method"] == meal_data["cooking_method"]), None)
-                    if method:
-                        calories = method["calories"] * quantity
-                        protein = method["protein"] * quantity
-                        carbs = method["carbs"] * quantity
-                        fat = method["fat"] * quantity
-                        cost = method["price"] * quantity
-                        
-                        processed_meals.append({
-                            "name": f"{meal.name} ({method['method']})",
-                            "quantity": quantity,
-                            "calories": calories,
-                            "protein": protein,
-                            "carbs": carbs,
-                            "fat": fat,
-                            "cost": cost
-                        })
-                else:
-                    # Use base meal data (per 100g)
-                    calories = (meal.calories * quantity) / 100
-                    protein = (meal.protein * quantity) / 100
-                    carbs = (meal.carbs * quantity) / 100
-                    fat = (meal.fat * quantity) / 100
-                    cost = (meal.price * quantity) / 100
-                    
-                    processed_meals.append({
-                        "name": f"{meal.name} ({quantity}g)",
-                        "quantity": quantity,
-                        "calories": calories,
-                        "protein": protein,
-                        "carbs": carbs,
-                        "fat": fat,
-                        "cost": cost
-                    })
-                
-                total_calories += calories
-                total_protein += protein
-                total_carbs += carbs
-                total_fat += fat
-                total_cost += cost
-        
-        return OrderSummary(
-            meals=processed_meals,
-            total_calories=total_calories,
-            total_protein=total_protein,
-            total_carbs=total_carbs,
-            total_fat=total_fat,
-            total_cost=total_cost
-        )
+@app.get("/api/cart")
+async def get_cart():
+    """Get current shopping cart contents"""
+    # Calculate totals
+    total_calories = sum(item.calories for item in shopping_cart)
+    total_protein = sum(item.protein for item in shopping_cart)
+    total_carbs = sum(item.carbs for item in shopping_cart)
+    total_fat = sum(item.fat for item in shopping_cart)
+    total_fiber = sum(item.fiber for item in shopping_cart)
+    total_cost = sum(item.price for item in shopping_cart)
     
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    cart_summary = CartSummary(
+        items=shopping_cart,
+        total_calories=total_calories,
+        total_protein=total_protein,
+        total_carbs=total_carbs,
+        total_fat=total_fat,
+        total_fiber=total_fiber,
+        total_cost=total_cost
+    )
+    
+    return cart_summary.model_dump()
+
+@app.post("/api/cart/add")
+async def add_to_cart(item: CartItem):
+    """Add an item to the shopping cart"""
+    # Translate cooking method to Vietnamese if present
+    if item.cooking_method:
+        item.cooking_method = translate_cooking_method(item.cooking_method)
+    
+    shopping_cart.append(item)
+    return {"message": "Item added to cart", "cart_size": len(shopping_cart)}
+
+@app.delete("/api/cart/clear")
+async def clear_cart():
+    """Clear all items from the shopping cart"""
+    shopping_cart.clear()
+    return {"message": "Cart cleared", "cart_size": 0}
+
+@app.delete("/api/cart/item/{item_index}")
+async def remove_cart_item(item_index: int):
+    """Remove a specific item from the cart by index"""
+    if 0 <= item_index < len(shopping_cart):
+        removed_item = shopping_cart.pop(item_index)
+        return {"message": f"Removed {removed_item.name} from cart", "cart_size": len(shopping_cart)}
+    else:
+        raise HTTPException(status_code=404, detail="Item not found in cart")
 
 if __name__ == "__main__":
     import uvicorn

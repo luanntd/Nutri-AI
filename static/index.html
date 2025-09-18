@@ -42,6 +42,193 @@
             gap: 2rem;
         }
 
+        .cart-container {
+            position: relative;
+            cursor: pointer;
+            padding: 0.8rem;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            background-color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .cart-container:hover {
+            background-color: #f5f5f5;
+        }
+
+        .cart-icon {
+            font-size: 1.5rem;
+            color: #000000;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Cart Modal */
+        .cart-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .cart-modal-content {
+            background-color: #ffffff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 2px solid #000000;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 10px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .cart-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffeb3b;
+        }
+
+        .cart-modal-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .cart-close {
+            color: #000000;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .cart-close:hover {
+            color: #ff4444;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .cart-item-info {
+            flex-grow: 1;
+        }
+
+        .cart-item-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-price {
+            font-weight: bold;
+            color: #ff6600;
+            font-size: 1.1rem;
+            margin-right: 15px;
+        }
+
+        .cart-item-remove {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-remove:hover {
+            background-color: #cc0000;
+        }
+
+        .cart-summary {
+            border-top: 2px solid #ffeb3b;
+            padding-top: 15px;
+            margin-top: 20px;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .cart-nutrition {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .nutrition-item {
+            text-align: center;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .cart-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .cart-clear-btn {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .cart-clear-btn:hover {
+            background-color: #444;
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
         .header-logo {
             height: 60px;
             width: auto;
@@ -359,6 +546,8 @@
             border: 1px solid #ddd;
             border-radius: 3px;
             font-size: 0.8rem;
+            min-width: 150px;
+            max-width: 200px;
         }
 
         .meal-item-expanded {
@@ -493,7 +682,7 @@
         }
 
         .quantity-input {
-            width: 80px;
+            width: 60px;
             padding: 0.3rem;
             border: 1px solid #ddd;
             border-radius: 3px;
@@ -624,6 +813,10 @@
                 <a href="#" class="nav-link active" data-section="home">Trang chủ</a>
                 <a href="#" class="nav-link" data-section="user">Người dùng</a>
                 <a href="#" class="nav-link" data-section="order">Lên thực đơn</a>
+            </div>
+            <div class="cart-container" onclick="toggleCart()">
+                <span class="cart-icon">🛒</span>
+                <span class="cart-count" id="cartCount">0</span>
             </div>
         </nav>
     </header>
@@ -796,6 +989,53 @@
         </section>
     </main>
 
+    <!-- Shopping Cart Modal -->
+    <div id="cartModal" class="cart-modal">
+        <div class="cart-modal-content">
+            <div class="cart-modal-header">
+                <h2 class="cart-modal-title">Giỏ hàng</h2>
+                <button class="cart-close" onclick="toggleCart()">&times;</button>
+            </div>
+            <div id="cartItems" class="cart-items">
+                <div class="cart-empty">
+                    Giỏ hàng trống
+                </div>
+            </div>
+            <div id="cartSummary" class="cart-summary" style="display: none;">
+                <div class="cart-total">
+                    <span>Tổng cộng:</span>
+                    <span id="cartTotalCost">0 VND</span>
+                </div>
+                <div class="cart-nutrition">
+                    <div class="nutrition-item">
+                        <div>Calo</div>
+                        <div id="cartTotalCalories">0</div>
+                    </div>
+                    <div class="nutrition-item">
+                        <div>Protein</div>
+                        <div id="cartTotalProtein">0g</div>
+                    </div>
+                    <div class="nutrition-item">
+                        <div>Carbs</div>
+                        <div id="cartTotalCarbs">0g</div>
+                    </div>
+                    <div class="nutrition-item">
+                        <div>Chất béo</div>
+                        <div id="cartTotalFat">0g</div>
+                    </div>
+                    <div class="nutrition-item">
+                        <div>Chất xơ</div>
+                        <div id="cartTotalFiber">0g</div>
+                    </div>
+                </div>
+                <div class="cart-actions">
+                    <button class="cart-clear-btn" onclick="clearCart()">Xóa hết</button>
+                    <button class="cart-order-btn" onclick="placeOrder()" style="background-color: #ffeb3b; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold;">Đặt hàng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables
         let userProfile = null;
@@ -805,6 +1045,24 @@
             lunch: { meals: [], quantities: [], methods: [] },
             dinner: { meals: [], quantities: [], methods: [] }
         };
+
+        // Cooking method translation
+        function translateCookingMethod(method) {
+            const translations = {
+                'boiled': 'Luộc',
+                'steamed': 'Hấp',
+                'raw': 'Sống/Tươi',
+                'baked': 'Nướng lò',
+                'grilled': 'Nướng',
+                'fried': 'Chiên',
+                'scrambled': 'Bác trứng',
+                'plain': 'Nguyên chất',
+                'spread': 'Phết',
+                'drizzled': 'Rưới',
+                'sautéed': 'Xào'
+            };
+            return translations[method] || method;
+        }
 
         // Navigation functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -889,15 +1147,19 @@
                     </div>
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.protein_target)}g</div>
-                        <div class="result-label">Mục tiêu Protein</div>
+                        <div class="result-label">Mục tiêu Đạm</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.carb_target)}g</div>
-                        <div class="result-label">Mục tiêu Carb</div>
+                        <div class="result-label">Mục tiêu Tinh bột</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.fat_target)}g</div>
-                        <div class="result-label">Mục tiêu Chất béo</div>
+                        <div class="result-label">Mục tiêu Chất béo tốt</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${Math.round(result.fiber_target)}g</div>
+                        <div class="result-label">Mục tiêu Chất xơ</div>
                     </div>
                 </div>
             `;
@@ -945,19 +1207,21 @@
                                            onchange="toggleMealForTime(this, '${mealTime}')">
                                     <div class="meal-info">
                                         <div class="meal-name">${meal.name}</div>
-                                        <div class="meal-details">Base: ${meal.calories} cal, ${meal.protein}g protein, ${meal.price} VND/100g</div>
+                                        <div class="meal-details">${meal.calories} cal, ${meal.protein}g đạm, ${meal.carbs}g tinh bột, ${meal.fat}g chất béo tốt, ${meal.fiber}g chất xơ /100g</div>
                                     </div>
                                 </div>
                                 <div class="meal-controls" style="display: none;">
                                     <label>Phương pháp nấu:</label>
                                     <select class="cooking-method-select" onchange="updateMealMethod(this, '${mealTime}')">
-                                        <option value="">Base (per 100g)</option>
-                                        ${meal.cooking_methods ? meal.cooking_methods.map(method => 
-                                            `<option value="${method.method}">${method.method} - ${method.calories} cal, ${method.price} VND</option>`
-                                        ).join('') : ''}
+                                        ${meal.cooking_methods && meal.cooking_methods.length > 0 ? 
+                                            meal.cooking_methods.map((method, index) => 
+                                                `<option value="${method.method}" ${index === 0 ? 'selected' : ''}>${translateCookingMethod(method.method)} - ${method.calories} cal, ${method.price} VND</option>`
+                                            ).join('') : 
+                                            '<option value="" selected>Cơ bản (per 100g)</option>'
+                                        }
                                     </select>
                                     <label>Số lượng:</label>
-                                    <input type="number" class="quantity-input" value="100" min="50" step="50" 
+                                    <input type="number" class="quantity-input" value="100" min="25" step="25" 
                                            onchange="updateMealQuantity(this, '${mealTime}')" placeholder="gram">
                                     <span>g</span>
                                 </div>
@@ -982,7 +1246,10 @@
                 if (!dailyMeals[mealTime].meals.includes(meal.name)) {
                     dailyMeals[mealTime].meals.push(meal.name);
                     dailyMeals[mealTime].quantities.push(100); // default 100g
-                    dailyMeals[mealTime].methods.push(''); // default no cooking method
+                    // Set first cooking method as default if available
+                    const defaultMethod = meal.cooking_methods && meal.cooking_methods.length > 0 ? 
+                        meal.cooking_methods[0].method : '';
+                    dailyMeals[mealTime].methods.push(defaultMethod);
                 }
             } else {
                 controls.style.display = 'none';
@@ -1016,7 +1283,15 @@
             const mealItem = input.closest('.meal-item-expanded');
             const checkbox = mealItem.querySelector('.meal-checkbox');
             const meal = JSON.parse(checkbox.getAttribute('data-meal'));
-            const quantity = parseFloat(input.value);
+            let quantity = parseFloat(input.value);
+            
+            // Round to nearest 25g increment
+            quantity = Math.round(quantity / 25) * 25;
+            // Ensure minimum 25g
+            quantity = Math.max(25, quantity);
+            
+            // Update the input value to show rounded amount
+            input.value = quantity;
             
             const index = dailyMeals[mealTime].meals.indexOf(meal.name);
             if (index > -1) {
@@ -1030,12 +1305,13 @@
             
             // Calculate totals for each meal time
             const mealTimes = ['breakfast', 'lunch', 'dinner'];
-            const mealTimeNames = ['🌅 Breakfast', '☀️ Lunch', '🌙 Dinner'];
+            const mealTimeNames = ['🌅 Bữa sáng', '☀️ Bữa trưa', '🌙 Bữa tối'];
             
             let totalDailyCalories = 0;
             let totalDailyProtein = 0;
             let totalDailyCarbs = 0;
             let totalDailyFat = 0;
+            let totalDailyFiber = 0;
             let totalDailyCost = 0;
             
             let summaryHtml = '';
@@ -1050,6 +1326,7 @@
                 let mealProtein = 0;
                 let mealCarbs = 0;
                 let mealFat = 0;
+                let mealFiber = 0;
                 let mealCost = 0;
                 
                 if (mealData.meals.length > 0) {
@@ -1068,7 +1345,7 @@
                         });
                         
                         if (meal) {
-                            let calories, protein, carbs, fat, cost;
+                            let calories, protein, carbs, fat, fiber, cost;
                             
                             if (method && meal.cooking_methods) {
                                 const cookingMethod = meal.cooking_methods.find(m => m.method === method);
@@ -1079,6 +1356,7 @@
                                     protein = cookingMethod.protein * servings;
                                     carbs = cookingMethod.carbs * servings;
                                     fat = cookingMethod.fat * servings;
+                                    fiber = (cookingMethod.fiber || 0) * servings;
                                     cost = cookingMethod.price * servings;
                                 } else {
                                     // Use base values per 100g
@@ -1086,6 +1364,7 @@
                                     protein = (meal.protein * quantity) / 100;
                                     carbs = (meal.carbs * quantity) / 100;
                                     fat = (meal.fat * quantity) / 100;
+                                    fiber = ((meal.fiber || 0) * quantity) / 100;
                                     cost = (meal.price * quantity) / 100;
                                 }
                             } else {
@@ -1094,6 +1373,7 @@
                                 protein = (meal.protein * quantity) / 100;
                                 carbs = (meal.carbs * quantity) / 100;
                                 fat = (meal.fat * quantity) / 100;
+                                fiber = ((meal.fiber || 0) * quantity) / 100;
                                 cost = (meal.price * quantity) / 100;
                             }
                             
@@ -1101,6 +1381,7 @@
                             mealProtein += protein;
                             mealCarbs += carbs;
                             mealFat += fat;
+                            mealFiber += fiber;
                             mealCost += cost;
                             
                             const displayName = method ? `${mealName} (${method})` : `${mealName} (${quantity}g)`;
@@ -1108,7 +1389,7 @@
                                 <div class="meal-summary-item">
                                     <div class="meal-summary-info">
                                         <strong>${displayName}</strong>
-                                        <div class="meal-summary-stats">${Math.round(calories)} cal, ${Math.round(protein)}g protein, ${Math.round(cost)} VND</div>
+                                        <div class="meal-summary-stats">${Math.round(calories)} cal, ${Math.round(protein)}g đạm, ${Math.round(cost)} VND</div>
                                     </div>
                                 </div>
                             `;
@@ -1117,7 +1398,7 @@
                     
                     summaryHtml += `
                         <div class="meal-time-totals">
-                            <strong>Meal Total: ${Math.round(mealCalories)} cal, ${Math.round(mealProtein)}g protein, ${Math.round(mealCost)} VND</strong>
+                            <strong>Tổng bữa ăn: ${Math.round(mealCalories)} cal, ${Math.round(mealProtein)}g đạm, ${Math.round(mealCost)} VND</strong>
                         </div>
                         </div>
                     `;
@@ -1127,6 +1408,7 @@
                 totalDailyProtein += mealProtein;
                 totalDailyCarbs += mealCarbs;
                 totalDailyFat += mealFat;
+                totalDailyFiber += mealFiber;
                 totalDailyCost += mealCost;
             }
             
@@ -1134,27 +1416,31 @@
             if (totalDailyCalories > 0) {
                 summaryHtml += `
                     <div class="daily-totals">
-                        <h3>🎯 Daily Totals</h3>
+                        <h3>🎯 Tổng hàng ngày</h3>
                         <div class="result-grid">
                             <div class="result-item">
                                 <div class="result-value">${Math.round(totalDailyCalories)}</div>
-                                <div class="result-label">Total Calories</div>
+                                <div class="result-label">Tổng Calo</div>
                             </div>
                             <div class="result-item">
                                 <div class="result-value">${Math.round(totalDailyProtein)}g</div>
-                                <div class="result-label">Total Protein</div>
+                                <div class="result-label">Tổng Đạm</div>
                             </div>
                             <div class="result-item">
                                 <div class="result-value">${Math.round(totalDailyCarbs)}g</div>
-                                <div class="result-label">Total Carbs</div>
+                                <div class="result-label">Tổng Tinh bột</div>
                             </div>
                             <div class="result-item">
                                 <div class="result-value">${Math.round(totalDailyFat)}g</div>
-                                <div class="result-label">Total Fat</div>
+                                <div class="result-label">Tổng Chất béo tốt</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value">${Math.round(totalDailyFiber)}g</div>
+                                <div class="result-label">Tổng Chất xơ</div>
                             </div>
                             <div class="result-item">
                                 <div class="result-value">${Math.round(totalDailyCost)}</div>
-                                <div class="result-label">Total Cost (VND)</div>
+                                <div class="result-label">Tổng Chi phí (VND)</div>
                             </div>
                         </div>
                     </div>
@@ -1165,37 +1451,45 @@
                     const targetCalories = userProfile.daily_calories;
                     const targetProtein = userProfile.protein_target;
                     const targetCarbs = userProfile.carb_target;
+                    const targetFiber = userProfile.fiber_target;
                     
                     const calorieProgress = Math.min((totalDailyCalories / targetCalories) * 100, 100);
                     const proteinProgress = Math.min((totalDailyProtein / targetProtein) * 100, 100);
                     const carbProgress = Math.min((totalDailyCarbs / targetCarbs) * 100, 100);
+                    const fiberProgress = Math.min((totalDailyFiber / targetFiber) * 100, 100);
                     
                     summaryHtml += `
                         <div class="progress-container">
-                            <h4>Progress Towards Daily Goals</h4>
+                            <h4>Tiến độ đạt mục tiêu hàng ngày</h4>
                             <div class="progress-item">
-                                <div class="progress-text">Calories: ${calorieProgress.toFixed(0)}% of target (${Math.round(totalDailyCalories)}/${Math.round(targetCalories)})</div>
+                                <div class="progress-text">Calo: ${calorieProgress.toFixed(0)}% mục tiêu (${Math.round(totalDailyCalories)}/${Math.round(targetCalories)})</div>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ${calorieProgress}%"></div>
                                 </div>
                             </div>
                             <div class="progress-item">
-                                <div class="progress-text">Protein: ${proteinProgress.toFixed(0)}% of target (${Math.round(totalDailyProtein)}g/${Math.round(targetProtein)}g)</div>
+                                <div class="progress-text">Đạm: ${proteinProgress.toFixed(0)}% mục tiêu (${Math.round(totalDailyProtein)}g/${Math.round(targetProtein)}g)</div>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ${proteinProgress}%"></div>
                                 </div>
                             </div>
                             <div class="progress-item">
-                                <div class="progress-text">Carbs: ${carbProgress.toFixed(0)}% of target (${Math.round(totalDailyCarbs)}g/${Math.round(targetCarbs)}g)</div>
+                                <div class="progress-text">Tinh bột: ${carbProgress.toFixed(0)}% mục tiêu (${Math.round(totalDailyCarbs)}g/${Math.round(targetCarbs)}g)</div>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ${carbProgress}%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-text">Chất xơ: ${fiberProgress.toFixed(0)}% mục tiêu (${Math.round(totalDailyFiber)}g/${Math.round(targetFiber)}g)</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${fiberProgress}%"></div>
                                 </div>
                             </div>
                         </div>
                     `;
                 }
             } else {
-                summaryHtml = '<p>Select meals for breakfast, lunch, and dinner to see your daily nutrition summary.</p>';
+                summaryHtml = '<p>Chọn món ăn cho bữa sáng, trưa và tối để xem tóm tắt dinh dưỡng hàng ngày.</p>';
             }
             
             progressDiv.innerHTML = summaryHtml;
@@ -1256,36 +1550,42 @@
             const summaryDiv = document.getElementById('orderSummary');
             summaryDiv.innerHTML = `
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 10px; margin: 1rem 0;">
-                    <h4>🤖 AI Daily Meal Recommendation</h4>
                     <div class="result-grid" style="margin-top: 1rem;">
                         <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
                             <div class="result-value">${Math.round(recommendation.total_calories)}</div>
-                            <div class="result-label">Optimized Calories</div>
+                            <div class="result-label">Calo Tối ưu</div>
                         </div>
                         <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
                             <div class="result-value">${Math.round(recommendation.total_protein)}g</div>
-                            <div class="result-label">Protein</div>
+                            <div class="result-label">Đạm</div>
                         </div>
                         <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
                             <div class="result-value">${Math.round(recommendation.total_carbs)}g</div>
-                            <div class="result-label">Carbs</div>
+                            <div class="result-label">Tinh bột</div>
                         </div>
                         <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
                             <div class="result-value">${Math.round(recommendation.total_fat)}g</div>
-                            <div class="result-label">Fat</div>
+                            <div class="result-label">Chất béo tốt</div>
                         </div>
+                        <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
+                            <div class="result-value">${Math.round(recommendation.total_fiber)}g</div>
+                            <div class="result-label">Chất xơ</div>
+                        </div>
+                        <div class="result-item" style="background: rgba(255,255,255,0.2); color: white;">
+                            <div class="result-value">${Math.round(recommendation.total_cost)}</div>
+                            <div class="result-label">Chi phí (VND)</div>
                     </div>
                     <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 5px;">
-                        <strong>💡 AI Explanation:</strong> ${recommendation.explanation}
+                        <strong>💡 Giải thích:</strong> ${recommendation.explanation}
                     </div>
                     ${recommendation.adjusted_meals && recommendation.adjusted_meals.length > 0 ? `
                         <div style="margin-top: 1rem;">
-                            <h5>🔧 Recommended Portion Adjustments:</h5>
+                            <h5>🔧 Gợi ý điều chỉnh khẩu phần:</h5>
                             ${recommendation.adjusted_meals.map((meal, index) => {
                                 const newQty = recommendation.adjusted_quantities[index];
                                 // Convert servings back to grams for cooking methods, or display as-is for gram-based
                                 const displayQty = meal.name.includes('(') ? 
-                                    `${(newQty * 100).toFixed(0)}g` :  // Cooking method: convert servings to grams
+                                    `${(newQty).toFixed(0)}g` :  // Cooking method: convert servings to grams
                                     `${newQty.toFixed(0)}g`;           // Base meal: already in grams
                                 
                                 // Check if there's a significant change (more than 10% difference)
@@ -1294,17 +1594,23 @@
                                 
                                 if (changePercent > 10) {
                                     return `<div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255,255,255,0.1); border-radius: 3px;">
-                                        <strong>${meal.name}:</strong> Adjust to ${displayQty}
-                                        <span style="color: #ffeb3b;">(${changePercent.toFixed(0)}% ${newQty > originalQty ? 'increase' : 'decrease'})</span>
+                                        <strong>${meal.name}:</strong> Điều chỉnh thành ${displayQty}
+                                        <span style="color: #ffeb3b;">(${changePercent.toFixed(0)}% ${newQty > originalQty ? 'tăng' : 'giảm'})</span>
                                     </div>`;
                                 } else {
                                     return `<div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255,255,255,0.1); border-radius: 3px;">
-                                        <strong>${meal.name}:</strong> Keep at ${displayQty} ✓
+                                        <strong>${meal.name}:</strong> Giữ nguyên ${displayQty} ✓
                                     </div>`;
                                 }
                             }).join('')}
                         </div>
                     ` : '<div style="margin-top: 1rem; color: #ffeb3b;">No portion adjustments needed - your current plan looks good!</div>'}
+                </div>
+                <div style="margin-top: 1rem; text-align: right;">
+                    <button onclick="saveDailyRecommendationToCart(${JSON.stringify(recommendation).replace(/"/g, '&quot;')})" 
+                            style="background: #ffeb3b; color: #000; border: none; padding: 12px 24px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                        🛒 Lưu vào giỏ hàng
+                    </button>
                 </div>
             `;
         }
@@ -1321,8 +1627,7 @@
                     const quantity = dailyMeals[mealTime].quantities[mealIndex];
                     const method = dailyMeals[mealTime].methods[mealIndex];
                     
-                    // If it has a cooking method, convert to servings
-                    return method ? quantity / 100 : quantity;
+                    return quantity;
                 }
             }
             return 100; // Default fallback
@@ -1430,6 +1735,12 @@
                         <strong>Giải thích AI:</strong> ${menu.explanation}
                     </div>
                 </div>
+                <div style="margin-top: 1rem; text-align: right;">
+                    <button onclick="saveBudgetMenuToCart(${JSON.stringify(menu).replace(/"/g, '&quot;')})" 
+                            style="background: #ffeb3b; color: #000; border: none; padding: 12px 24px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                        🛒 Lưu vào giỏ hàng
+                    </button>
+                </div>
             `;
         }
 
@@ -1448,6 +1759,226 @@
             successDiv.textContent = message;
             document.body.appendChild(successDiv);
             setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        // Shopping Cart Functions
+        let shoppingCart = [];
+
+        function toggleCart() {
+            const modal = document.getElementById('cartModal');
+            if (modal.style.display === 'block') {
+                modal.style.display = 'none';
+            } else {
+                loadCart();
+                modal.style.display = 'block';
+            }
+        }
+
+        async function loadCart() {
+            try {
+                const response = await fetch('/api/cart');
+                const cartData = await response.json();
+                displayCart(cartData);
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                showError('Lỗi khi tải giỏ hàng');
+            }
+        }
+
+        function displayCart(cartData) {
+            const cartItems = document.getElementById('cartItems');
+            const cartSummary = document.getElementById('cartSummary');
+            const cartCount = document.getElementById('cartCount');
+
+            if (!cartData.items || cartData.items.length === 0) {
+                cartItems.innerHTML = '<div class="cart-empty">Giỏ hàng trống</div>';
+                cartSummary.style.display = 'none';
+                cartCount.textContent = '0';
+                return;
+            }
+
+            // Display cart items
+            cartItems.innerHTML = cartData.items.map((item, index) => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-details">
+                            ${item.cooking_method ? item.cooking_method + ' • ' : ''}${item.quantity}g
+                            <br>
+                            ${item.calories.toFixed(1)} cal • ${item.protein.toFixed(1)}g protein • ${item.carbs.toFixed(1)}g carbs • ${item.fat.toFixed(1)}g chất béo
+                        </div>
+                    </div>
+                    <div class="cart-item-price">${item.price.toLocaleString()} VND</div>
+                    <button class="cart-item-remove" onclick="removeCartItem(${index})">Xóa</button>
+                </div>
+            `).join('');
+
+            // Display summary
+            cartSummary.style.display = 'block';
+            document.getElementById('cartTotalCost').textContent = `${cartData.total_cost.toLocaleString()} VND`;
+            document.getElementById('cartTotalCalories').textContent = cartData.total_calories.toFixed(1);
+            document.getElementById('cartTotalProtein').textContent = `${cartData.total_protein.toFixed(1)}g`;
+            document.getElementById('cartTotalCarbs').textContent = `${cartData.total_carbs.toFixed(1)}g`;
+            document.getElementById('cartTotalFat').textContent = `${cartData.total_fat.toFixed(1)}g`;
+            document.getElementById('cartTotalFiber').textContent = `${cartData.total_fiber.toFixed(1)}g`;
+
+            // Update cart count
+            cartCount.textContent = cartData.items.length.toString();
+        }
+
+        async function addToCart(item) {
+            try {
+                const response = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(item)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('cartCount').textContent = result.cart_size.toString();
+                    showSuccess('Đã thêm vào giỏ hàng');
+                } else {
+                    throw new Error('Failed to add to cart');
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                showError('Lỗi khi thêm vào giỏ hàng');
+            }
+        }
+
+        async function removeCartItem(index) {
+            try {
+                const response = await fetch(`/api/cart/item/${index}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadCart(); // Reload cart display
+                    showSuccess('Đã xóa khỏi giỏ hàng');
+                } else {
+                    throw new Error('Failed to remove item');
+                }
+            } catch (error) {
+                console.error('Error removing item:', error);
+                showError('Lỗi khi xóa khỏi giỏ hàng');
+            }
+        }
+
+        async function clearCart() {
+            if (confirm('Bạn có chắc muốn xóa hết giỏ hàng?')) {
+                try {
+                    const response = await fetch('/api/cart/clear', {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadCart(); // Reload cart display
+                        showSuccess('Đã xóa hết giỏ hàng');
+                    } else {
+                        throw new Error('Failed to clear cart');
+                    }
+                } catch (error) {
+                    console.error('Error clearing cart:', error);
+                    showError('Lỗi khi xóa giỏ hàng');
+                }
+            }
+        }
+
+        function placeOrder() {
+            console.log('Đặt hàng được nhấn - chức năng sẽ được triển khai sau');
+            alert('Đặt hàng đã được đặt thành công!');
+        }
+
+        // Load cart count on page load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/cart');
+                const cartData = await response.json();
+                document.getElementById('cartCount').textContent = (cartData.items || []).length.toString();
+            } catch (error) {
+                console.error('Error loading cart count:', error);
+            }
+        });
+
+        // Save daily recommendation to cart
+        async function saveDailyRecommendationToCart(recommendation) {
+            try {
+                for (let i = 0; i < recommendation.adjusted_meals.length; i++) {
+                    const meal = recommendation.adjusted_meals[i];
+                    const quantity = recommendation.adjusted_quantities[i];
+                    
+                    // Calculate nutrition per serving based on quantity
+                    const nutritionPerServing = calculateNutritionForQuantity(meal, quantity);
+                    
+                    const cartItem = {
+                        name: meal.name,
+                        quantity: quantity,
+                        cooking_method: meal.cooking_methods && meal.cooking_methods.length > 0 ? meal.cooking_methods[0].method : null,
+                        calories: nutritionPerServing.calories,
+                        protein: nutritionPerServing.protein,
+                        carbs: nutritionPerServing.carbs,
+                        fat: nutritionPerServing.fat,
+                        fiber: nutritionPerServing.fiber,
+                        price: nutritionPerServing.price
+                    };
+                    
+                    await addToCart(cartItem);
+                }
+                showSuccess('Đã lưu toàn bộ thực đơn vào giỏ hàng!');
+            } catch (error) {
+                console.error('Error saving daily recommendation to cart:', error);
+                showError('Lỗi khi lưu thực đơn vào giỏ hàng');
+            }
+        }
+
+        // Save budget menu to cart
+        async function saveBudgetMenuToCart(menu) {
+            try {
+                const allMeals = [...menu.breakfast, ...menu.lunch, ...menu.dinner];
+                
+                for (const meal of allMeals) {
+                    const quantity = meal.quantity || meal.portions || 100;
+                    
+                    // Calculate nutrition per serving
+                    const nutritionPerServing = calculateNutritionForQuantity(meal, quantity);
+                    
+                    const cartItem = {
+                        name: meal.name,
+                        quantity: quantity,
+                        cooking_method: meal.method || null,
+                        calories: nutritionPerServing.calories,
+                        protein: nutritionPerServing.protein,
+                        carbs: nutritionPerServing.carbs,
+                        fat: nutritionPerServing.fat,
+                        fiber: nutritionPerServing.fiber,
+                        price: nutritionPerServing.price
+                    };
+                    
+                    await addToCart(cartItem);
+                }
+                showSuccess('Đã lưu thực đơn tối ưu vào giỏ hàng!');
+            } catch (error) {
+                console.error('Error saving budget menu to cart:', error);
+                showError('Lỗi khi lưu thực đơn vào giỏ hàng');
+            }
+        }
+
+        // Helper function to calculate nutrition for specific quantity
+        function calculateNutritionForQuantity(meal, quantity) {
+            // All nutrition values are per 100g, so we scale by quantity/100
+            const scale = quantity / 100;
+            
+            return {
+                calories: meal.calories * scale,
+                protein: meal.protein * scale,
+                carbs: meal.carbs * scale,
+                fat: meal.fat * scale,
+                fiber: (meal.fiber || 0) * scale,
+                price: meal.price * scale
+            };
         }
     </script>
 </body>

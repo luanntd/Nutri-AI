@@ -38,22 +38,26 @@ def get_macro_targets(user: User, daily_calories: float) -> dict:
     """Calculate macro targets based on goal"""
     if user.goal == "lose":
         # Higher protein, lower carbs for weight loss
-        protein_ratio = 0.35
-        carb_ratio = 0.35
-        fat_ratio = 0.30
+        protein_ratio = 0.30
+        carb_ratio = 0.30
+        fat_ratio = 0.25
+        fiber_ratio = 0.15  # Higher fiber for weight loss (helps with satiety)
     elif user.goal == "gain":
         # Higher carbs for muscle gain
-        protein_ratio = 0.30
+        protein_ratio = 0.25
         carb_ratio = 0.45
         fat_ratio = 0.25
+        fiber_ratio = 0.05  # Lower fiber for muscle gain (easier digestion)
     else:
         # Balanced for maintenance
-        protein_ratio = 0.30
+        protein_ratio = 0.25
         carb_ratio = 0.40
-        fat_ratio = 0.30
+        fat_ratio = 0.25
+        fiber_ratio = 0.10  # Moderate fiber for maintenance
     
     return {
         "protein": (daily_calories * protein_ratio) / 4,  # 4 cal per gram
         "carbs": (daily_calories * carb_ratio) / 4,      # 4 cal per gram
-        "fat": (daily_calories * fat_ratio) / 9          # 9 cal per gram
+        "fat": (daily_calories * fat_ratio) / 9,         # 9 cal per gram
+        "fiber": (daily_calories * fiber_ratio) / 2      # 2 cal per gram
     }
