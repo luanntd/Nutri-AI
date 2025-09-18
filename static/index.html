@@ -850,7 +850,7 @@
                     <form id="userProfileForm">
                         <div class="input-group">
                             <label for="name">Tên:</label>
-                            <input type="text" id="name" name="name" value="Luan Nguyen" required>
+                            <input type="text" id="name" name="name" value="Xuan Diem" required>
                         </div>
                         
                         <div class="input-group">
@@ -1389,7 +1389,7 @@
                                 <div class="meal-summary-item">
                                     <div class="meal-summary-info">
                                         <strong>${displayName}</strong>
-                                        <div class="meal-summary-stats">${Math.round(calories)} cal, ${Math.round(protein)}g đạm, ${Math.round(cost)} VND</div>
+                                        <div class="meal-summary-stats">${Math.round(quantity)} g, ${Math.round(calories)} cal, ${Math.round(cost)} VND</div>
                                     </div>
                                 </div>
                             `;
@@ -1690,13 +1690,13 @@
             // Helper function to format meal details
             const formatMeal = (meal) => {
                 const portions = meal.portions || meal.quantity || 100;
-                const unit = meal.method ? 'khẩu phần' : 'gram';
+                const unit = 'gram';
                 const methodInfo = meal.method ? ` (${meal.method})` : '';
                 return `
                     <div style="margin: 0.5rem 0; padding: 0.5rem; background: #f8f9fa; border-radius: 3px;">
                         • <strong>${meal.name}</strong>${methodInfo}<br>
                         <small style="color: #666;">
-                            ${portions} ${unit} - ${Math.round(meal.calories)} calo - ${meal.protein}g protein - ${Math.round(meal.price)} VND
+                            ${portions} ${unit} - ${Math.round(meal.calories)} calo - ${meal.protein}g đạm - ${Math.round(meal.fat)}g chất béo tốt - ${Math.round(meal.carbs)}g tinh bột - ${Math.round(meal.fiber)}g chất xơ - ${Math.round(meal.price)} VND
                         </small>
                     </div>
                 `;
@@ -1805,7 +1805,7 @@
                         <div class="cart-item-details">
                             ${item.cooking_method ? item.cooking_method + ' • ' : ''}${item.quantity}g
                             <br>
-                            ${item.calories.toFixed(1)} cal • ${item.protein.toFixed(1)}g protein • ${item.carbs.toFixed(1)}g carbs • ${item.fat.toFixed(1)}g chất béo
+                            ${item.calories.toFixed(1)} cal • ${item.protein.toFixed(1)}g đạm • ${item.carbs.toFixed(1)}g tinh bột • ${item.fat.toFixed(1)}g chất béo • ${item.fiber.toFixed(1)}g chất xơ
                         </div>
                     </div>
                     <div class="cart-item-price">${item.price.toLocaleString()} VND</div>
@@ -1968,17 +1968,30 @@
 
         // Helper function to calculate nutrition for specific quantity
         function calculateNutritionForQuantity(meal, quantity) {
-            // All nutrition values are per 100g, so we scale by quantity/100
-            const scale = quantity / 100;
-            
-            return {
-                calories: meal.calories * scale,
-                protein: meal.protein * scale,
-                carbs: meal.carbs * scale,
-                fat: meal.fat * scale,
-                fiber: (meal.fiber || 0) * scale,
-                price: meal.price * scale
-            };
+            // Check if this is from budget optimization (meal.price is already calculated correctly)
+            // or from daily recommendations (need to calculate price)
+            if (meal.quantity && meal.price) {
+                // Budget optimization: price is already calculated for the specific quantity
+                return {
+                    calories: meal.calories,
+                    protein: meal.protein,
+                    carbs: meal.carbs,
+                    fat: meal.fat,
+                    fiber: meal.fiber || 0,
+                    price: meal.price  // Don't multiply again!
+                };
+            } else {
+                // Daily recommendations: calculate based on per-100g values
+                const scale = quantity / 100;
+                return {
+                    calories: meal.calories * scale,
+                    protein: meal.protein * scale,
+                    carbs: meal.carbs * scale,
+                    fat: meal.fat * scale,
+                    fiber: (meal.fiber || 0) * scale,
+                    price: meal.price * scale
+                };
+            }
         }
     </script>
 </body>

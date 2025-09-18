@@ -223,9 +223,11 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
     macro_targets = get_macro_targets(user, daily_calories)
 
     meals_str = "\n".join([
-        f"- {meal.name}: {meal.calories} cal, {meal.protein}g protein, {meal.carbs}g carbs, {meal.fat}g fat, {meal.fiber}g fiber, {meal.price} VND" +
-        (f" (cooking methods: {', '.join([method['method'] for method in meal.cooking_methods])})" 
-         if hasattr(meal, 'cooking_methods') and meal.cooking_methods else "/100g")
+        f"- {meal.name} " +
+        (f"\n  Cooking methods: " + 
+         ", ".join([f"{method['method']} ({method['calories']} cal, {method['protein']}g protein, {method['carbs']}g carbs, {method['fat']}g fat, {method['fiber']}g fiber, {method['price']} VND/100g)" 
+                   for method in meal.cooking_methods]) 
+         if hasattr(meal, 'cooking_methods') and meal.cooking_methods else "")
         for meal in SAMPLE_MEALS
     ])
 
@@ -243,19 +245,27 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
 
     Tạo thực đơn tối ưu cho cả ngày (sáng, trưa, tối) sao cho:
     1. Nằm trong ngân sách: {budget} VND
-    2. Đạt mục tiêu calo: ~{daily_calories} calo
-    3. Phù hợp với các chỉ số dinh dưỡng dựa trên mục tiêu ({user.goal})
-    4. Sử dụng phương pháp nấu và khối lượng tính bằng gram (PHẢI chia hết cho 25g, tối thiểu 25g)
+    2. Đạt mục tiêu calo hằng ngày: ~{daily_calories}
+    3. Phù hợp với các chỉ số dinh dưỡng dựa trên mục tiêu ({user.goal}):
+    - Nếu mục tiêu người dùng là "lose", hãy ưu tiên giảm tổng calo thấp hơn calo hằng ngày và đảm bảo đủ protein.
+    - Nếu mục tiêu người dùng là "gain", hãy ưu tiên tăng tổng calo cao hơn calo hằng ngày và tăng cường protein.
+    - Nếu mục tiêu người dùng là "maintain", hãy giữ calo ổn định và cân bằng các chất dinh dưỡng.
+    4. Chỉ sử dụng phương pháp nấu và khối lượng tính bằng gram (PHẢI chia hết cho 25g, tối thiểu 25g)
+    5. Chỉ chọn từ danh sách món ăn có sẵn ở trên
+
+    HƯỚNG DẪN TÍNH GIÁ:
+    - Tất cả giá trên được tính theo VND/100g
+    - Để tính giá cho số gram cụ thể: (giá/100g) × (số gram) / 100
+    - Ví dụ: Ức gà nướng 200g = (60000 VND/100g) × 200g / 100 = 120,000 VND
+    - Hãy tính toán cẩn thận để đảm bảo tổng chi phí không vượt quá ngân sách {budget} VND
 
     Vui lòng trả về bằng tiếng Việt với định dạng JSON:
     {{
         "breakfast": [
-            {{"name": "tên_món_ăn", "method": "phương_pháp_nấu", "grams": 100, "calories": 100, "protein": 10, "carbs": 20, "fat": 5, "fiber": 3, "price": 10000}}
+            {{"name": "tên_món_ăn", "method": "phương_pháp_nấu", "grams": 100, "calories": 100, "protein": 10, "carbs": 20, "fat": 5, "fiber": 3}}
         ],
         "lunch": [...],
         "dinner": [...],
-        "total_cost": 90000,
-        "total_calories": 1500,
         "explanation": "Thực đơn được thiết kế cho mục tiêu giảm cân với protein cao..."
     }}
     """
@@ -274,6 +284,7 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
         )
 
         result = json.loads(response.text)
+        print(f"DEBUG: parsed result: {result}")
         
         # Convert to Menu object
         breakfast_meals = []
@@ -290,12 +301,17 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
         for meal_data in result.get("dinner", []):
             dinner_meals.append(create_meal_from_response(meal_data))
 
+        # Recalculate totals based on corrected meal data
+        all_meals = breakfast_meals + lunch_meals + dinner_meals
+        corrected_total_cost = sum(meal.price for meal in all_meals)
+        corrected_total_calories = sum(meal.calories for meal in all_meals)
+
         return Menu(
             breakfast=breakfast_meals,
             lunch=lunch_meals,
             dinner=dinner_meals,
-            total_cost=result.get("total_cost", budget),
-            total_calories=result.get("total_calories", daily_calories),
+            total_cost=corrected_total_cost,
+            total_calories=corrected_total_calories,
             explanation=result.get("explanation", "AI-generated optimized menu")
         )
 
@@ -314,26 +330,80 @@ def create_meal_from_response(meal_data: dict):
     rounded_grams = max(25, rounded_grams)  # Minimum 25g
     
     method = meal_data.get("method", "")
+    meal_name = meal_data.get("name", "Unknown")
     
-    # Create meal object with enhanced data structure (all values per 100g)
+    # Find the actual meal from SAMPLE_MEALS to get correct price
+    actual_meal = None
+    for sample_meal in SAMPLE_MEALS:
+        if sample_meal.name.lower() == meal_name.lower():
+            actual_meal = sample_meal
+            break
+    
+    if actual_meal:
+        # Calculate correct price based on actual meal data and quantity
+        correct_price = (float(actual_meal.price) * rounded_grams / 100)
+        
+        # Use actual meal nutrition or cooking method nutrition
+        if method and hasattr(actual_meal, 'cooking_methods') and actual_meal.cooking_methods:
+            # Find the matching cooking method
+            method_data = None
+            for cook_method in actual_meal.cooking_methods:
+                if cook_method['method'].lower() == method.lower():
+                    method_data = cook_method
+                    break
+            
+            if method_data:
+                # Use cooking method nutrition per 100g, calculate for actual grams
+                calories = method_data["calories"] * rounded_grams / 100
+                protein = method_data["protein"] * rounded_grams / 100
+                carbs = method_data["carbs"] * rounded_grams / 100
+                fat = method_data["fat"] * rounded_grams / 100
+                fiber = method_data.get("fiber", 0) * rounded_grams / 100
+                # Use cooking method price if available, otherwise base meal price
+                if "price" in method_data:
+                    correct_price = method_data["price"] * rounded_grams / 100
+            else:
+                # Fallback to base meal nutrition
+                calories = actual_meal.calories * rounded_grams / 100
+                protein = actual_meal.protein * rounded_grams / 100
+                carbs = actual_meal.carbs * rounded_grams / 100
+                fat = actual_meal.fat * rounded_grams / 100
+                fiber = getattr(actual_meal, 'fiber', 0) * rounded_grams / 100
+        else:
+            # Use base meal nutrition
+            calories = actual_meal.calories * rounded_grams / 100
+            protein = actual_meal.protein * rounded_grams / 100
+            carbs = actual_meal.carbs * rounded_grams / 100
+            fat = actual_meal.fat * rounded_grams / 100
+            fiber = getattr(actual_meal, 'fiber', 0) * rounded_grams / 100
+    else:
+        # Fallback: use AI provided values if meal not found
+        calories = meal_data.get("calories", 0) * rounded_grams / 100
+        protein = meal_data.get("protein", 0) * rounded_grams / 100
+        carbs = meal_data.get("carbs", 0) * rounded_grams / 100
+        fat = meal_data.get("fat", 0) * rounded_grams / 100
+        fiber = meal_data.get("fiber", 0) * rounded_grams / 100
+        correct_price = meal_data.get("price", 0) * rounded_grams / 100
+    
+    # Create meal object with corrected data
     meal = Meal(
-        name=meal_data.get("name", "Unknown"),
-        calories=meal_data.get("calories", 0),
-        protein=meal_data.get("protein", 0),
-        carbs=meal_data.get("carbs", 0),
-        fat=meal_data.get("fat", 0),
-        fiber=meal_data.get("fiber", 0),
-        price=meal_data.get("price", 0),
+        name=meal_name,
+        calories=calories,
+        protein=protein,
+        carbs=carbs,
+        fat=fat,
+        fiber=fiber,
+        price=correct_price,
         component_type="mixed",
         food_type="prepared",
         cooking_methods=[{
             "method": method,
-            "calories": meal_data.get("calories", 0),
-            "protein": meal_data.get("protein", 0),
-            "carbs": meal_data.get("carbs", 0),
-            "fat": meal_data.get("fat", 0),
-            "fiber": meal_data.get("fiber", 0),
-            "price": meal_data.get("price", 0),
+            "calories": calories,
+            "protein": protein,
+            "carbs": carbs,
+            "fat": fat,
+            "fiber": fiber,
+            "price": correct_price,
             "grams": rounded_grams
         }] if method else []
     )
