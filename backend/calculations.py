@@ -1,4 +1,4 @@
-from models import User, ActivityLevel
+from backend.models import User, ActivityLevel
 
 def calculate_bmr(user: User) -> float:
     """Calculate Basal Metabolic Rate using Mifflin-St Jeor equation"""

@@ -6,9 +6,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 import os
 
-from models import User, MealSelection, Recommendation, Menu, SAMPLE_MEALS, Gender, ActivityLevel, Goal
-from calculations import calculate_daily_calories, get_macro_targets
-from ai_service import get_meal_recommendation, get_optimized_menu
+from backend.models import Meal, User, MealSelection, Recommendation, Menu, SAMPLE_MEALS, Gender, ActivityLevel, Goal
+from backend.calculations import calculate_daily_calories, get_macro_targets
+from backend.ai_service import get_meal_recommendation, get_optimized_menu
 
 app = FastAPI(title="Nutri AI API", description="AI-powered nutrition recommendation system")
 
@@ -149,7 +149,6 @@ async def recommend_meals(request: MealRecommendationRequest):
                     # Create meal with specific cooking method
                     method = next((m for m in meal.cooking_methods if m["method"] == meal_data["cooking_method"]), None)
                     if method:
-                        from models import Meal
                         processed_meal = Meal(
                             name=f"{meal.name} ({method['method']})",
                             calories=method["calories"],
@@ -214,7 +213,6 @@ async def recommend_daily_meals(request: dict):
                             # Create meal with specific cooking method
                             method_data = next((m for m in meal.cooking_methods if m["method"] == method), None)
                             if method_data:
-                                from models import Meal
                                 # Convert grams to servings for cooking methods (assume 100g per serving)
                                 servings = quantity / 100.0
                                 processed_meal = Meal(

@@ -2,8 +2,8 @@ import os
 import json
 from google import genai
 from dotenv import load_dotenv
-from models import User, MealSelection, Recommendation, Menu, SAMPLE_MEALS
-from calculations import calculate_daily_calories, get_macro_targets
+from backend.models import Meal, User, MealSelection, Recommendation, Menu, SAMPLE_MEALS
+from backend.calculations import calculate_daily_calories, get_macro_targets
 
 # Load environment variables
 load_dotenv()
@@ -254,7 +254,6 @@ def get_optimized_menu(user: User, budget: float) -> Menu:
 
 def create_meal_from_response(meal_data: dict):
     """Create a meal object from AI response data"""
-    from models import Meal
     
     # Extract portion/quantity information
     portions = meal_data.get("portions", 1)

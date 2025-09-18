@@ -1,7 +1,7 @@
 import streamlit as st
-from models import User, Meal, MealSelection, SAMPLE_MEALS, Gender, ActivityLevel, Goal
-from calculations import calculate_daily_calories, get_macro_targets
-from ai_service import get_meal_recommendation, get_optimized_menu
+from backend.models import User, Meal, MealSelection, SAMPLE_MEALS, Gender, ActivityLevel, Goal
+from backend.calculations import calculate_daily_calories, get_macro_targets
+from backend.ai_service import get_meal_recommendation, get_optimized_menu
 
 # Configure page
 st.set_page_config(
